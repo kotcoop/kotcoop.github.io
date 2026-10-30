@@ -940,7 +940,10 @@ const store = { get(k) { try { return localStorage.getItem(k) } catch (e) { retu
 async function loadMembers() {
   let names = [];
   if (MEMBERS.csvUrl) try {
-    const csv = await (await fetch(MEMBERS.csvUrl, { cache: "no-store" })).text();
+    // fresh copy each time (Google's own copies can lag); fall back to the last list we saw if it fails
+    let csv;
+    try { const r = await fetch(MEMBERS.csvUrl + "&t=" + Date.now(), { cache: "no-store" }); if (!r.ok) throw 0; csv = await r.text(); store.set("kotcoop-csv", csv) }
+    catch (e) { csv = store.get("kotcoop-csv") || "" }
     names = csv.trim().split(/\r?\n/).slice(1).map(l => (l.match(/^(?:"[^"]*"|[^,]*),("(?:[^"]|"")*"|[^,]*)/) || [])[1] || "")
       .map(n => n.replace(/^"|"$/g, "").replace(/""/g, '"').trim()).filter(Boolean);
   } catch (e) {}
