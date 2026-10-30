@@ -954,8 +954,11 @@ async function renderMembers(fresh) {
 }
 (function () {
   const gate = document.getElementById("gate");
-  if (!store.get("kotcoop-name") && !store.get("kotcoop-skip")) gate.hidden = false;
-  document.getElementById("gate-skip").onclick = () => { store.set("kotcoop-skip", "1"); gate.hidden = true };
+  // the name box greets you on every visit (a visit = until the tab or app is closed)
+  const seen = { get() { try { return sessionStorage.getItem("kotcoop-in") } catch (e) { return null } },
+                 set() { try { sessionStorage.setItem("kotcoop-in", "1") } catch (e) {} } };
+  if (!seen.get()) gate.hidden = false;
+  document.getElementById("gate-skip").onclick = () => { seen.set(); gate.hidden = true };
   // "Enter KOTCOOP!" on the members list opens the name box again, then leads into the site
   document.getElementById("members-enter").onclick = () => {
     gate.dataset.next = "#manifesto"; gate.hidden = false;
@@ -965,7 +968,7 @@ async function renderMembers(fresh) {
     e.preventDefault();
     const name = document.getElementById("gate-name").value.trim().replace(/\s+/g, " ");
     if (!name) return;
-    store.set("kotcoop-name", name);
+    store.set("kotcoop-name", name); seen.set();
     const mine = JSON.parse(store.get("kotcoop-local") || "[]"); if (!mine.includes(name)) mine.push(name);
     store.set("kotcoop-local", JSON.stringify(mine));
     if (MEMBERS.formUrl) try { await fetch(MEMBERS.formUrl, { method: "POST", mode: "no-cors", body: new URLSearchParams({ [MEMBERS.field]: name }) }) } catch (e) {}
