@@ -199,7 +199,7 @@ body { background-image: none; background-color: transparent }
 .js-reveal .manifesto .w.on { opacity: 1 }
 .js-reveal .manifesto .hl { background-size: 0% 100%; background-repeat: no-repeat; transition: background-size .8s ease }
 .js-reveal .manifesto .hl.on { background-size: 100% 100% }
-.js-reveal .stop:not(.in) .dot, .js-reveal .stop:not(.in) .about { opacity: 0; transform: scale(.85) }
+.js-reveal .stop:not(.in) .dot, .js-reveal .stop:not(.in) .note { opacity: 0; transform: scale(.85) }
 .stop .dot, .stop .about { transition: opacity .5s ease, transform .5s ease, background-color .15s, color .15s }
 @media (prefers-reduced-motion: reduce) { .js-reveal .manifesto .w { opacity: 1 } .js-reveal .reveal:not(.in), .js-reveal .stop:not(.in) .dot, .js-reveal .stop:not(.in) .about { opacity: 1; transform: none } .js-reveal .manifesto .hl { background-size: 100% 100% } }
 /* sketch map of Ghent in the panel next to the title */
@@ -249,6 +249,26 @@ nav.tabs { margin-left: 0; flex: 1 1 auto; justify-content: space-between }
 nav.tabs a { font-size: clamp(14px, 1.45vw, 17px); padding: 16px clamp(8px, 1vw, 14px); letter-spacing: .02em; flex: 1 1 auto; text-align: center }
 @media (min-width: 761px) { nav.tabs { flex-wrap: nowrap } }
 @media (max-width: 760px) { nav.tabs a { font-size: 14px; padding: 14px 12px; flex: none } }
+/* manifesto and the thread of circles side by side, so the buttons are there from the start */
+.mrow { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 36px; align-items: start }
+.mrow .manifesto { max-width: none }
+.mrow .thread { padding-block: 0 }
+.mrow .stop { gap: 16px; padding-block: 10px }
+.mrow .stop:nth-child(n) { padding-left: 0; padding-right: 0 }
+.mrow .stop:nth-child(4n+3) { padding-left: 14% } .mrow .stop:nth-child(4n) { padding-right: 14% }
+.mrow .dot { width: calc(var(--d, 170px) * .82); font-size: clamp(13px, 1.4vw, 17px) }
+.mrow .stop .about { max-width: 22ch }
+@media (max-width: 900px) { .mrow { grid-template-columns: 1fr } }
+/* circles only; they swing left and right along the thread */
+.mrow .stop:nth-child(n) { padding: 6px 0; flex-direction: row; justify-content: flex-start; text-align: left }
+.mrow .stop:nth-child(even) { justify-content: flex-end }
+.mrow .stop:nth-child(4n+3) { padding-left: 22% }
+.mrow .stop:nth-child(4n) { padding-right: 22% }
+.stop:nth-child(even) .note { order: -1 }
+.note { font: 500 14px/1.3 var(--mono); color: var(--ink); text-decoration: none; display: inline-flex; align-items: center; gap: 8px; position: relative; z-index: 1; background: var(--paper); padding: 4px 6px }
+.note .arrow { font-size: 22px; line-height: 1 }
+.note:hover { color: #fff; background: var(--ink) }
+.note:active { background: var(--blue) }
 </style>
 </head>
 <body>
@@ -280,6 +300,7 @@ nav.tabs a { font-size: clamp(14px, 1.45vw, 17px); padding: 16px clamp(8px, 1vw,
       <div class="box"><h1>KOTCOOP!</h1><span class="sub">Jokerweek 2027 · 22.03 – 26.03 · Engineering Architecture UGent</span></div>
       <a class="tex mapbox" href="#locations" aria-label="Map of Ghent: open locations"><span class="map" data-map="small"></span><span class="maptag">Locations →</span></a>
     </div>
+    <div class="mrow">
     <article class="box manifesto">
       <h2 class="mtitle">Manifesto</h2>
       <p class="lead reveal"><span class="hl">Ghent is a city shaped by its students.</span> Every year, thousands of young people come here to study, meet new people, discover themselves, and take their first steps towards independence.</p>
@@ -292,15 +313,16 @@ nav.tabs a { font-size: clamp(14px, 1.45vw, 17px); padding: 16px clamp(8px, 1vw,
       <p class="reveal">The <span class="hl">financial structure</span> also works differently. The money residents contribute is primarily used to <span class="hl">cover the costs of the property</span>, <span class="hl">maintain and improve the building</span>, and ensure the <span class="hl">long-term continuity</span> of the cooperative. By prioritising these goals over private profit, the cooperative can work towards <span class="hl">keeping housing affordable over time</span>. This way we can stop following the trend of increasing rents.</p>
     </article>
     <nav class="thread" id="thread" aria-label="Sections">
-      <div class="stop"><a class="dot" href="#schedule" style="--d:178px">Schedule</a><p class="about"><b>01</b><span>Five days, hour by hour.</span></p></div>
-      <div class="stop"><a class="dot" href="#locations" style="--d:172px">Locations</a><p class="about"><b>02</b><span>Where we meet, work and present.</span></p></div>
-      <div class="stop"><a class="dot" href="#forum" style="--d:150px">Forum</a><p class="about"><b>03</b><span>Our WhatsApp community.</span></p></div>
-      <div class="stop"><a class="dot" href="#wiki" style="--d:140px">Wiki</a><p class="about"><b>04</b><span>Background, references, words.</span></p></div>
-      <div class="stop"><a class="dot" href="#membership" style="--d:188px">Becoming a member</a><p class="about"><b>05</b><span>Groups, what to bring, where to be.</span></p></div>
-      <div class="stop"><a class="dot" href="#governance" style="--d:188px">Governance</a><p class="about"><b>06</b><span>Who runs the cooperative.</span></p></div>
-      <div class="stop"><a class="dot" href="#statutes" style="--d:165px">Statutes</a><p class="about"><b>07</b><span>What every member agrees to.</span></p></div>
-      <div class="stop"><a class="dot" href="#food" style="--d:140px">Food</a><p class="about"><b>08</b><span>The common kitchen's menu.</span></p></div>
+      <div class="stop"><a class="dot" href="#schedule" style="--d:178px">Schedule</a></div>
+      <div class="stop"><a class="dot" href="#locations" style="--d:172px">Locations</a></div>
+      <div class="stop"><a class="dot" href="#forum" style="--d:150px">Forum</a><a class="note" href="https://chat.whatsapp.com/DfnlvwhWPfgKdy7ex9Crtb" target="_blank" rel="noopener"><span class="arrow">←</span> our WhatsApp community</a></div>
+      <div class="stop"><a class="dot" href="#wiki" style="--d:140px">Wiki</a></div>
+      <div class="stop"><a class="dot" href="#membership" style="--d:188px">Becoming a member</a></div>
+      <div class="stop"><a class="dot" href="#governance" style="--d:188px">Governance</a></div>
+      <div class="stop"><a class="dot" href="#statutes" style="--d:165px">Statutes</a></div>
+      <div class="stop"><a class="dot" href="#food" style="--d:140px">Food</a></div>
     </nav>
+    </div>
   </section>
 
   <!-- SCHEDULE -->
@@ -589,17 +611,14 @@ function drawThread() {
   const rel = el => { const r = el.getBoundingClientRect(); return { l: r.left - r0.left, r: r.right - r0.left, t: r.top - r0.top, b: r.bottom - r0.top } };
   const title = rel(sec.querySelector(".titlebox")), art = rel(sec.querySelector(".manifesto")), nav = rel(document.getElementById("thread"));
   const dots = [...sec.querySelectorAll(".dot")].map(d => { const r = rel(d); return [(r.l + r.r) / 2, (r.t + r.b) / 2] });
-  const narrow = W < 700;
-  const xR = narrow ? W * .86 : (art.r + W) / 2;
-  // polyline of alternating vertical / horizontal runs
-  const pts = [[title.l + (title.r - title.l) * .58, -r0.top - scrollY], ];
-  const g1 = (title.b + art.t) / 2, g2 = (art.b + nav.t) / 2 + 20;
-  pts.push([pts[0][0], g1], [xR, g1], [xR, g2], [dots[0][0], g2], [dots[0][0], dots[0][1]]);
+  // polyline of alternating vertical / horizontal runs: from the page top straight to the first circle
+  const pts = [[title.l + (title.r - title.l) * .58, -r0.top - scrollY]];
+  const g1 = (title.b + Math.min(art.t, nav.t)) / 2;
+  pts.push([pts[0][0], g1], [dots[0][0], g1], [dots[0][0], dots[0][1]]);
   for (let i = 1; i < dots.length; i++) {
     const ym = (dots[i - 1][1] + dots[i][1]) / 2;
     pts.push([dots[i - 1][0], ym], [dots[i][0], ym], [dots[i][0], dots[i][1]]);
   }
-  pts.push([dots[dots.length - 1][0], r0.height + 40]);
   // round every corner
   const R = 30; let d = `M ${pts[0][0]} ${pts[0][1]}`;
   for (let i = 1; i < pts.length - 1; i++) {
@@ -631,9 +650,10 @@ function onScroll() {
   const path = document.getElementById("thread-path");
   if (reduceMotion || !samples.length) { path.style.strokeDashoffset = 0; }
   else {
-    const target = innerHeight * .78 - sec.getBoundingClientRect().top;   // how far down the pen has reached
+    const target = innerHeight * .95 - sec.getBoundingClientRect().top;   // how far down the pen has reached
     let len = total;
-    for (const [l, y] of samples) if (y > target) { len = l; break }
+    const atEnd = scrollY + innerHeight >= document.documentElement.scrollHeight - 4;
+    if (!atEnd) for (const [l, y] of samples) if (y > target) { len = l; break }
     path.style.strokeDashoffset = total - len;
   }
   document.querySelectorAll("#v-manifesto .reveal, #v-manifesto .stop").forEach(el => {
