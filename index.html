@@ -1,0 +1,828 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Jokerweek Cooperative</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#7b1e2e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500&family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&display=swap">
+<style>
+/* Layout: graph-paper poster. Everything sits on a bordeaux grid; content lives in paper boxes cut out of it. Single light look by design. */
+:root {
+  --paper: #f6f2ec;
+  --ink: #7b1e2e;        /* bordeaux, main colour */
+  --blue: #4a78c2;       /* lighter blue, second ink */
+  --text: #3a1219;
+  --grid: rgba(123, 30, 46, .26);
+  --c: 26px;             /* agenda cell = half an hour */
+  --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+* { box-sizing: border-box }
+[hidden] { display: none !important }
+html { background: var(--paper) }
+body { background-color: var(--paper); color: var(--text); font: 14px/1.6 var(--mono);
+  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 40px 40px; background-position: -1px -1px; min-height: 100% }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--paper) }
+.wrap { max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)) }
+a { color: inherit }
+:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px }
+p { margin: 0; max-width: 68ch }
+
+.box { background: var(--paper); border: 1.5px solid var(--ink) }
+.mark { outline: 1px dashed var(--blue); color: var(--blue); padding: 0 3px }          /* placeholder text */
+.hl { background: color-mix(in srgb, var(--blue) 20%, var(--paper)); padding: 0 2px; box-decoration-break: clone; -webkit-box-decoration-break: clone }
+.stipple { background-color: var(--paper); background-image: radial-gradient(var(--text) 1px, transparent 1.3px); background-size: 7px 7px }
+.hatch { background-color: var(--paper); background-image: repeating-linear-gradient(-35deg, var(--ink) 0 1px, transparent 1px 5px) }
+
+/* header */
+header.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; padding-block: 16px 12px; background: var(--paper) }
+.top .wrap { display: flex; align-items: flex-start; gap: 24px }
+.logo { display: grid; grid-template-columns: auto auto; background: var(--paper); border: 1.5px solid var(--ink); text-decoration: none; flex: none;
+  font: 500 14px/1 var(--display); text-transform: uppercase; color: var(--text) }
+.logo span { padding: 8px 10px; border-right: 1.5px solid var(--ink) }
+.logo span:nth-child(2) { border-right: 0 }
+.logo span:nth-child(3) { grid-column: 1 / 3; border-right: 0; border-top: 1.5px solid var(--ink); padding: 14px 10px 8px }
+nav.tabs { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; min-width: 0; background: var(--paper); border: 1.5px solid var(--ink); margin-left: auto }
+nav.tabs::-webkit-scrollbar { display: none }
+nav.tabs a { font: 500 12px/1 var(--mono); text-transform: uppercase; letter-spacing: .04em; padding: 10px 10px; white-space: nowrap; text-underline-offset: 3px }
+nav.tabs a:hover { background: var(--ink); color: #fff; text-decoration: none }
+nav.tabs a:active, nav.tabs a[aria-current="page"] { background: var(--blue); color: #fff; text-decoration: none }
+
+/* red thread: a line winding down the page, sections as circles on it.
+   Circle: outlined at rest, bordeaux on hover, blue when clicked, white text. */
+.thread { position: relative; padding-block: 20px }
+#v-manifesto { position: relative }
+.thread-line { position: absolute; left: 0; top: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; z-index: 0 }
+.thread-line path { fill: none; stroke: var(--ink); stroke-width: 2.5 }
+#v-manifesto .box, #v-manifesto .titlebox .tex, .stop { position: relative; z-index: 1 }
+.stop { position: relative; display: flex; align-items: center; gap: 28px; padding-block: 14px }
+.stop:nth-child(even) { flex-direction: row-reverse; text-align: right }
+.stop:nth-child(4n+1) { padding-left: 4% } .stop:nth-child(4n+3) { padding-left: 16% }
+.stop:nth-child(4n+2) { padding-right: 6% } .stop:nth-child(4n) { padding-right: 20% }
+.dot { flex: none; width: var(--d, 170px); aspect-ratio: 1; border-radius: 50%; display: grid; place-items: center; text-align: center; padding: 14px;
+  background: var(--paper); border: 2.5px solid var(--ink); color: var(--ink); text-decoration: none; position: relative; z-index: 1;
+  font: 400 clamp(15px, 2.2vw, 21px)/1.05 var(--display); text-transform: uppercase; transition: background-color .15s, color .15s, border-color .15s, transform .15s }
+.dot:hover { background: var(--ink); color: #fff; transform: scale(1.04) }
+.dot:active { background: var(--blue); border-color: var(--blue); color: #fff }
+.stop .about { display: grid; gap: 4px; max-width: 34ch; min-width: 0; background: var(--paper); padding: 6px 10px; border: 1px solid var(--grid) }
+.stop .about b { font: 500 12px/1.3 var(--mono); color: var(--ink); letter-spacing: .06em }
+.stop .about span { font-size: 13px }
+
+main { padding-block: 28px 80px }
+section.view { display: grid; gap: 40px }
+
+/* title box, like a poster heading cut out of the grid */
+.titlebox { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, .8fr); align-items: stretch }
+.titlebox .box { padding: 18px 22px 14px; display: grid; gap: 8px; align-content: end }
+.titlebox .tex { border: 1.5px solid var(--ink); border-left: 0; min-height: 140px }
+h1, h2, h3 { font-family: var(--display); font-weight: 400; margin: 0; text-transform: uppercase; line-height: .95; text-wrap: balance }
+h1 { font-size: clamp(44px, 8vw, 96px); letter-spacing: -.01em }
+h2 { font-size: clamp(30px, 5vw, 52px) }
+h3 { font-size: 17px; font-weight: 500; line-height: 1.2 }
+.sub { font: 500 13px/1.3 var(--mono); text-transform: uppercase; letter-spacing: .04em; color: var(--ink) }
+
+/* manifesto */
+.manifesto { padding: 28px clamp(18px, 4vw, 44px) 32px; display: grid; gap: 18px; max-width: 780px; font-size: 15px; line-height: 1.7 }
+.manifesto .lead { font-family: var(--display); font-size: clamp(20px, 2.6vw, 26px); line-height: 1.3 }
+.manifesto .turn { font-family: var(--display); font-size: clamp(22px, 3vw, 30px); line-height: 1.2; text-transform: uppercase; color: var(--ink);
+  border-block: 1.5px solid var(--ink); padding-block: 14px; max-width: none }
+
+/* list rows (articles, menu, places) */
+.rows { padding: 6px 22px 10px }
+.row { display: grid; grid-template-columns: 140px 1fr; gap: 20px; padding-block: 16px; border-bottom: 1px solid var(--grid) }
+.row:last-child { border-bottom: 0 }
+.row > * { min-width: 0 }
+.row .k { color: var(--ink); font-weight: 500; text-transform: uppercase; font-size: 13px }
+.row p + p { margin-top: 4px }
+.row ul { margin: 4px 0 0; padding-left: 18px }
+.row a { color: var(--ink); text-underline-offset: 3px }
+
+/* agenda */
+.agenda-wrap { overflow: hidden }
+.agenda-scroll { overflow-x: auto; overscroll-behavior-x: contain }
+.agenda { --dayw: 92px; width: calc(var(--dayw) + 34 * var(--c)); position: relative }
+.hours, .dayrow { display: grid; grid-template-columns: var(--dayw) calc(34 * var(--c)) }
+.hours { height: 30px; border-bottom: 1.5px solid var(--ink) }
+.hours .ticks { position: relative }
+.hours .ticks span { position: absolute; top: 8px; transform: translateX(3px); font-size: 11px; color: var(--ink) }
+.corner, .daylabel { position: sticky; left: 0; z-index: 2; background: var(--paper); border-right: 1.5px solid var(--ink) }
+.daylabel { padding: 8px 10px; display: grid; align-content: start; gap: 2px; text-transform: uppercase; font-size: 12px }
+.daylabel b { font: 400 22px/1 var(--display); color: var(--ink) }
+.dayrow { border-bottom: 1px solid var(--ink) }
+.dayrow:last-child { border-bottom: 0 }
+.track { position: relative; height: calc(4 * var(--c));
+  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: var(--c) var(--c) }
+.ev { position: absolute; top: 3px; bottom: 3px; margin-left: 1px; border: 1.5px solid var(--ink); padding: 4px 5px; overflow: hidden; cursor: pointer; text-align: left;
+  font: 500 11px/1.25 var(--mono); color: var(--text); background: var(--paper); display: block }
+.ev .t { display: block; font-weight: 400 }
+.ev .lbl { display: inline-block; max-width: 100%; background: var(--paper); padding: 1px 3px }
+.ev.talk { background: var(--ink); color: var(--paper) }
+.ev.social { background: var(--blue); border-color: var(--blue); color: var(--paper) }
+.ev.work { border-color: var(--blue); color: var(--blue); background-image: repeating-linear-gradient(-35deg, color-mix(in srgb, var(--blue) 70%, transparent) 0 1px, transparent 1px 6px) }
+.ev.food { background-image: radial-gradient(var(--ink) 1px, transparent 1.3px); background-size: 6px 6px }
+.ev[aria-pressed="true"] { outline: 2px solid var(--text); outline-offset: -5px }
+.ev.live { box-shadow: inset 0 0 0 3px var(--paper) }
+.nowline { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--blue); z-index: 1; pointer-events: none }
+.legend { display: flex; flex-wrap: wrap; gap: 18px; padding: 12px 16px; border-top: 1.5px solid var(--ink); font-size: 12px; text-transform: uppercase }
+.legend span { display: inline-flex; align-items: center; gap: 8px }
+.legend i { width: 26px; height: 14px; border: 1.5px solid var(--ink); display: inline-block }
+.detail { display: grid; grid-template-columns: 140px 1fr; gap: 20px; padding: 18px 22px }
+.detail > * { min-width: 0 }
+
+/* wiki */
+.wiki { display: grid; grid-template-columns: 220px minmax(0, 1fr) }
+.wiki aside { display: grid; align-content: start; border-right: 1.5px solid var(--ink) }
+.wiki aside button { all: unset; cursor: pointer; padding: 12px 16px; border-bottom: 1px solid var(--grid); text-transform: uppercase; font-size: 12px; font-weight: 500 }
+.wiki aside button[aria-current="true"] { background: var(--ink); color: var(--paper) }
+.wiki aside button:focus-visible { outline: 2px solid var(--blue); outline-offset: -2px }
+.wiki article { padding: 22px; display: grid; gap: 14px; align-content: start }
+.wiki article ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; max-width: 68ch }
+.gloss { display: grid; grid-template-columns: 170px 1fr; gap: 10px 20px; margin: 0 }
+.gloss dt { font-weight: 500; color: var(--ink) }
+.gloss dd { margin: 0 }
+
+.join { padding: 22px; display: grid; gap: 14px }
+.join a { font: 400 clamp(22px, 3.5vw, 34px)/1.1 var(--display); text-transform: uppercase; color: var(--ink); text-underline-offset: 6px }
+
+footer { padding-block: 0 24px; font-size: 12px; text-transform: uppercase }
+footer .box { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; padding: 10px 14px }
+
+@media (max-width: 760px) {
+  .top .wrap { flex-direction: column; gap: 10px }
+  nav.tabs { margin-left: 0; max-width: 100% }
+  .titlebox { grid-template-columns: 1fr }
+  .titlebox .tex { border-left: 1.5px solid var(--ink); border-top: 0; min-height: 60px }
+  .row, .detail { grid-template-columns: 1fr; gap: 4px }
+  .wiki { grid-template-columns: 1fr }
+  .wiki aside { border-right: 0; border-bottom: 1.5px solid var(--ink); display: flex; overflow-x: auto }
+  .wiki aside button { white-space: nowrap; border-bottom: 0; border-right: 1px solid var(--grid) }
+  .gloss { grid-template-columns: 1fr; gap: 2px }
+  .gloss dd { margin-bottom: 10px }
+  .agenda { --dayw: 62px }
+  .daylabel b { font-size: 18px }
+  .stop { gap: 14px }
+  .stop:nth-child(n) { padding-left: 0; padding-right: 0 }
+  .stop:nth-child(4n+3) { padding-left: 10% } .stop:nth-child(4n) { padding-right: 10% }
+  .dot { width: calc(var(--d, 170px) * .7); padding: 6px; font-size: 13px }
+}
+/* ---- Drawn by hand: every line runs through a pen filter so it wobbles like ink ---- */
+body { background-image: none; background-color: transparent }
+.paper-grid { position: fixed; inset: 0; z-index: -1; pointer-events: none; background-size: 400px 400px }
+.box, .logo, nav.tabs, .titlebox .tex, .stop .about { position: relative; border-color: transparent !important }
+.logo span { border-color: transparent !important; position: relative }
+/* sketch overlays: smooth vector lines with a slight hand wobble (drawn by script) */
+.sk { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; z-index: 2 }
+.sk path { fill: none; stroke: var(--ink); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round }
+.stop .about .sk path { stroke-width: 1; opacity: .5 }
+.dot { background: none !important; border-color: transparent !important; isolation: isolate }
+.dot .ring { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; z-index: -1 }
+.dot .ring path { fill: var(--paper); stroke: var(--ink); stroke-width: 2.5; transition: fill .15s, stroke .15s }
+.dot:hover .ring path { fill: var(--ink) }
+.dot:active .ring path { fill: var(--blue); stroke: var(--blue) }
+.thread-line path { stroke-linecap: round; stroke-linejoin: round }
+
+.hl { background: none; background-image: linear-gradient(transparent 45%, color-mix(in srgb, var(--blue) 28%, transparent) 45%, color-mix(in srgb, var(--blue) 28%, transparent) 88%, transparent 88%) }
+/* ---- Scroll: the manifesto fills in and the thread draws itself as you go down ---- */
+/* manifesto writes itself: words go from faint to full ink as you scroll past them */
+.js-reveal .manifesto .w { opacity: .13; transition: opacity .35s ease }
+.js-reveal .manifesto .w.on { opacity: 1 }
+.js-reveal .manifesto .hl { background-size: 0% 100%; background-repeat: no-repeat; transition: background-size .8s ease }
+.js-reveal .manifesto .hl.on { background-size: 100% 100% }
+.js-reveal .stop:not(.in) .dot, .js-reveal .stop:not(.in) .about { opacity: 0; transform: scale(.85) }
+.stop .dot, .stop .about { transition: opacity .5s ease, transform .5s ease, background-color .15s, color .15s }
+@media (prefers-reduced-motion: reduce) { .js-reveal .manifesto .w { opacity: 1 } .js-reveal .reveal:not(.in), .js-reveal .stop:not(.in) .dot, .js-reveal .stop:not(.in) .about { opacity: 1; transform: none } .js-reveal .manifesto .hl { background-size: 100% 100% } }
+/* sketch map of Ghent in the panel next to the title */
+.mapbox { display: block; position: relative; text-decoration: none; color: inherit; overflow: hidden; background: var(--paper) }
+.map, .map svg { position: absolute; inset: 0; width: 100%; height: 100% }
+.map .river { fill: none; stroke: var(--blue); stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; opacity: .3 }
+.map .river-edge { fill: none; stroke: var(--blue); stroke-width: 1.3; stroke-linecap: round }
+.map .street { fill: none; stroke: var(--ink); stroke-width: 1; opacity: .55 }
+.map .rail { fill: none; stroke: var(--text); stroke-width: 1.2; stroke-dasharray: 6 3 }
+.map .park { fill: color-mix(in srgb, var(--blue) 8%, transparent); stroke: var(--blue); stroke-width: .8; stroke-dasharray: 2 3 }
+.map .blocks rect { fill: color-mix(in srgb, var(--ink) 7%, transparent); stroke: var(--ink); stroke-width: .6; opacity: .75 }
+.map .lm { fill: var(--paper); stroke: var(--ink); stroke-width: 1.3; stroke-linejoin: round }
+.map .sq { fill: none; stroke: var(--ink); stroke-width: .9; stroke-dasharray: 2 2 }
+.map text { font: 500 9.5px var(--mono); fill: var(--ink); letter-spacing: .06em; text-transform: uppercase; paint-order: stroke; stroke: var(--paper); stroke-width: 3px }
+.map text.water { fill: var(--blue); font-style: italic }
+.map text.soft { fill: var(--text); opacity: .7 }
+.map .pin path { fill: var(--ink); stroke: var(--paper); stroke-width: 1.5 }
+.map .pin.todo path { fill: var(--paper); stroke: var(--ink); stroke-width: 1.3; stroke-dasharray: 2 2 }
+.map .pin text { font-size: 11px; font-weight: 500; fill: var(--text); text-transform: none; letter-spacing: 0 }
+.bigmap { position: relative; aspect-ratio: 1; width: min(100%, 720px); overflow: hidden }
+.maptag { position: absolute; right: 10px; bottom: 10px; z-index: 3; background: var(--paper); border: 1.5px solid var(--ink); padding: 5px 9px;
+  font: 500 11px/1 var(--mono); text-transform: uppercase; letter-spacing: .05em; transition: background-color .15s, color .15s }
+a.mapbox:hover .maptag { background: var(--ink); color: #fff; border-color: var(--ink) }
+a.mapbox:active .maptag { background: var(--blue); color: #fff; border-color: var(--blue) }
+.titlebox .mapbox { min-height: 170px }
+/* cursor halo: everything dark under it turns blue (lighten blend keeps the paper as it is) */
+.halo { position: fixed; left: 0; top: 0; width: 180px; height: 180px; margin: -90px 0 0 -90px; border-radius: 50%; pointer-events: none; z-index: 50;
+  background: radial-gradient(circle, var(--blue) 0 38%, color-mix(in srgb, var(--blue) 60%, transparent) 52%, transparent 70%);
+  mix-blend-mode: lighten; opacity: 0; transition: opacity .25s }
+.halo-glow { position: fixed; left: 0; top: 0; width: 180px; height: 180px; margin: -90px 0 0 -90px; border-radius: 50%; pointer-events: none; z-index: 49;
+  background: radial-gradient(circle, color-mix(in srgb, var(--blue) 10%, transparent) 0 45%, transparent 70%); opacity: 0; transition: opacity .25s }
+.halo.on, .halo-glow.on { opacity: 1 }
+@media (hover: none), (pointer: coarse) { .halo, .halo-glow { display: none } }
+</style>
+</head>
+<body>
+
+<div class="paper-grid" aria-hidden="true"></div>
+<div class="halo-glow" aria-hidden="true"></div><div class="halo" aria-hidden="true"></div>
+<header class="top">
+  <div class="wrap">
+    <a class="logo" href="#manifesto" aria-label="Jokerweek home"><span>Joker</span><span>Week</span><span>Co-op 2027</span></a>
+    <nav class="tabs" aria-label="Sections">
+      <a href="#manifesto">Manifesto</a>
+      <a href="#schedule">Schedule</a>
+      <a href="#membership">Becoming a member</a>
+      <a href="#governance">Governance</a>
+      <a href="#statutes">Statutes</a>
+      <a href="#food">Food</a>
+      <a href="#locations">Locations</a>
+      <a href="#wiki">Wiki</a>
+      <a href="#forum">Forum</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- MANIFESTO -->
+  <section class="view" id="v-manifesto">
+    <svg class="thread-line" aria-hidden="true"><path id="thread-path"/></svg>
+    <div class="titlebox">
+      <div class="box"><h1>Manifesto</h1><span class="sub">Jokerweek 2027 · 22.03 – 26.03 · Engineering Architecture UGent</span></div>
+      <a class="tex mapbox" href="#locations" aria-label="Map of Ghent: open locations"><span class="map" data-map="small"></span><span class="maptag">Locations →</span></a>
+    </div>
+    <article class="box manifesto">
+      <p class="lead reveal"><span class="hl">Ghent is a city shaped by its students.</span> Every year, thousands of young people come here to study, meet new people, discover themselves, and take their first steps towards independence.</p>
+      <p class="reveal">For many, living in a student residence is an essential part of this experience. It is often their first home away from home, a place where friendships are formed and where they learn what it means to live independently.</p>
+      <p class="reveal">Yet student housing is increasingly losing this potential. As <span class="hl">rents continue to rise</span>, finding an affordable room in Ghent is becoming more difficult. Student housing is increasingly treated as an investment opportunity, with the <span class="hl">financial interests of property owners</span> often <span class="hl">taking priority over the needs of students</span>. At the same time, students have little influence over the places they inhabit. Strict rental agreements and regulations leave <span class="hl">limited room for personalisation, creativity, or collective initiatives</span>. Although students spend an important part of their lives in these residences, they rarely have the opportunity to truly make them their own.</p>
+      <p class="reveal">We believe <span class="hl">student housing should be more than simply a place to sleep</span> between lectures. It <span class="hl">should be an environment that encourages independence, personal development, and meaningful relationships. A place where students can feel at home and actively contribute to the community around them.</span></p>
+      <p class="turn reveal">This is why we want to introduce a different approach to student housing in Ghent: the student housing cooperative.</p>
+      <p class="reveal">A housing cooperative offers an alternative to the conventional relationship between landlord and tenant. Rather than being owned by an individual landlord or a profit-driven company, housing is <span class="hl">collectively owned or managed</span> through a cooperative organisation, the students themselves. Its purpose is <span class="hl">not to maximise financial returns</span>, but to provide <span class="hl">good and affordable housing for its members</span>, both <span class="hl">now and in the future</span>.</p>
+      <p class="reveal">In a student housing cooperative, residents become members of an organisation in which they <span class="hl">have a meaningful voice</span>. They <span class="hl">participate in shaping</span> the way their residence functions and <span class="hl">share responsibility for its development</span>. Instead of simply following decisions made by an external property owner, students are encouraged to take part in the <span class="hl">management of their own living environment</span>.</p>
+      <p class="reveal">The <span class="hl">financial structure</span> also works differently. The money residents contribute is primarily used to <span class="hl">cover the costs of the property</span>, <span class="hl">maintain and improve the building</span>, and ensure the <span class="hl">long-term continuity</span> of the cooperative. By prioritising these goals over private profit, the cooperative can work towards <span class="hl">keeping housing affordable over time</span>. This way we can stop following the trend of increasing rents.</p>
+    </article>
+    <nav class="thread" id="thread" aria-label="Sections">
+      <div class="stop"><a class="dot" href="#schedule" style="--d:190px">Schedule</a><p class="about"><b>01</b><span>Five days, hour by hour.</span></p></div>
+      <div class="stop"><a class="dot" href="#membership" style="--d:170px">Becoming a member</a><p class="about"><b>02</b><span>Groups, what to bring, where to be.</span></p></div>
+      <div class="stop"><a class="dot" href="#governance" style="--d:172px">Governance</a><p class="about"><b>03</b><span>Who runs the cooperative.</span></p></div>
+      <div class="stop"><a class="dot" href="#statutes" style="--d:175px">Statutes</a><p class="about"><b>04</b><span>What every member agrees to.</span></p></div>
+      <div class="stop"><a class="dot" href="#food" style="--d:135px">Food</a><p class="about"><b>05</b><span>The common kitchen's menu.</span></p></div>
+      <div class="stop"><a class="dot" href="#locations" style="--d:165px">Locations</a><p class="about"><b>06</b><span>Where we meet, work and present.</span></p></div>
+      <div class="stop"><a class="dot" href="#wiki" style="--d:150px">Wiki</a><p class="about"><b>07</b><span>Background, references, words.</span></p></div>
+      <div class="stop"><a class="dot" href="#forum" style="--d:185px">Forum</a><p class="about"><b>08</b><span>Our WhatsApp community.</span></p></div>
+    </nav>
+  </section>
+
+  <!-- SCHEDULE -->
+  <section class="view" id="v-schedule" hidden>
+    <div class="titlebox">
+      <div class="box"><h2>Schedule</h2><span class="sub">Mon 22.03 – Fri 26.03.2027 · <span class="mark">placeholder programme</span></span></div>
+      <div class="tex hatch" aria-hidden="true"></div>
+    </div>
+    <div class="box agenda-wrap">
+      <div class="agenda-scroll" id="agenda-scroll"><div class="agenda" id="agenda"></div></div>
+      <div class="legend">
+        <span><i style="background:var(--ink)"></i>Talk</span>
+        <span><i style="border-color:var(--blue);background-image:repeating-linear-gradient(-35deg,var(--blue) 0 1px,transparent 1px 5px)"></i>Studio</span>
+        <span><i style="background-image:radial-gradient(var(--ink) 1px,transparent 1.3px);background-size:5px 5px"></i>Food</span>
+        <span><i style="background:var(--blue);border-color:var(--blue)"></i>Evening</span>
+      </div>
+    </div>
+    <div class="box detail" id="detail" aria-live="polite"></div>
+  </section>
+
+  <!-- MEMBERSHIP -->
+  <section class="view" id="v-membership" hidden>
+    <div class="titlebox">
+      <div class="box"><h2>Becoming a member</h2><span class="sub">One share, one vote</span></div>
+      <div class="tex stipple" aria-hidden="true"></div>
+    </div>
+    <div class="box rows">
+      <div class="row"><span class="k">§ 1.1 Who</span><p>All master's students Engineering Architecture taking part in the Jokerweek. <span class="mark">Aantal studenten in te vullen.</span></p></div>
+      <div class="row"><span class="k">§ 1.2 Group</span><p>You are placed in a housing group of <span class="mark">X</span> members. Each group forms its own cooperative and designs one project. <span class="mark">Groepsindeling volgt.</span></p></div>
+      <div class="row"><span class="k">§ 1.3 Monday</span><p>Founding meeting at 09:00. <span class="mark">Locatie in te vullen.</span></p></div>
+      <div class="row"><span class="k">§ 1.4 Bring</span><div><ul><li>Laptop and charger</li><li>Sketch materials</li><li><span class="mark">Verder aan te vullen</span></li></ul></div></div>
+    </div>
+  </section>
+
+  <!-- GOVERNANCE -->
+  <section class="view" id="v-governance" hidden>
+    <div class="titlebox">
+      <div class="box"><h2>Governance</h2><span class="sub">Who runs the cooperative</span></div>
+      <div class="tex hatch" aria-hidden="true"></div>
+    </div>
+    <div class="box rows">
+      <div class="row"><span class="k">Board</span><p>The organising team. <span class="mark">Namen en rollen.</span></p></div>
+      <div class="row"><span class="k">Advisors</span><p>Tutors and guests who coach the groups. <span class="mark">Namen, wie begeleidt welke groep.</span></p></div>
+      <div class="row"><span class="k">Brief</span><p><span class="mark">De opdracht in een paar zinnen.</span></p></div>
+      <div class="row"><span class="k">Deliverables</span><p>What every group presents on Friday. <span class="mark">Formaat, panelen, maquette, presentatieduur.</span></p></div>
+      <div class="row"><span class="k">Assembly</span><p>Friday's general assembly: final presentations to the jury and all members. <span class="mark">Jury en beoordeling.</span></p></div>
+      <div class="row"><span class="k">Contact</span><p><span class="mark">E-mailadres van de organisatie.</span></p></div>
+    </div>
+  </section>
+
+  <!-- STATUTES -->
+  <section class="view" id="v-statutes" hidden>
+    <div class="titlebox">
+      <div class="box"><h2>Statutes</h2><span class="sub">What every member agrees to · <span class="mark">draft</span></span></div>
+      <div class="tex stipple" aria-hidden="true"></div>
+    </div>
+    <div class="box rows">
+      <div class="row"><span class="k">Art. 1 Purpose</span><p>The cooperative exists to imagine affordable, collective student housing in Ghent.</p></div>
+      <div class="row"><span class="k">Art. 2 Members</span><p>Every participating student is a member with one share and one vote.</p></div>
+      <div class="row"><span class="k">Art. 3 Presence</span><p>Members attend the founding meeting on Monday and the general assembly on Friday. <span class="mark">Aanwezigheidsregels.</span></p></div>
+      <div class="row"><span class="k">Art. 4 Commons</span><p>Studios, kitchen and tools are common property. Leave them as you found them.</p></div>
+      <div class="row"><span class="k">Art. 5 Decisions</span><p>Groups decide by consent: a proposal passes when nobody has a reasoned objection.</p></div>
+      <div class="row"><span class="k">Art. 6 Dissolution</span><p>The cooperative is dissolved on Friday 26 March after the party. Its ideas remain public.</p></div>
+    </div>
+  </section>
+
+  <!-- FOOD -->
+  <section class="view" id="v-food" hidden>
+    <div class="titlebox">
+      <div class="box"><h2>Food</h2><span class="sub">The common kitchen · <span class="mark">placeholder menu</span></span></div>
+      <div class="tex stipple" aria-hidden="true"></div>
+    </div>
+    <div class="box rows" id="menu"></div>
+  </section>
+
+  <!-- LOCATIONS -->
+  <section class="view" id="v-locations" hidden>
+    <div class="titlebox">
+      <div class="box"><h2>Locations</h2><span class="sub">Where the cooperative meets</span></div>
+      <div class="tex mapbox"><span class="map" data-map="small"></span></div>
+    </div>
+    <div class="box bigmap"><span class="map"></span></div>
+    <div class="box rows" id="places"></div>
+  </section>
+
+  <!-- WIKI -->
+  <section class="view" id="v-wiki" hidden>
+    <div class="titlebox">
+      <div class="box"><h2>Wiki</h2><span class="sub">Background, references, words</span></div>
+      <div class="tex stipple" aria-hidden="true"></div>
+    </div>
+    <div class="box wiki">
+      <aside id="wiki-nav" aria-label="Wiki pages"></aside>
+      <article id="wiki-page"></article>
+    </div>
+  </section>
+
+  <!-- FORUM -->
+  <section class="view" id="v-forum" hidden>
+    <div class="titlebox">
+      <div class="box"><h2>Forum</h2><span class="sub">Questions, announcements, discussion</span></div>
+      <div class="tex hatch" aria-hidden="true"></div>
+    </div>
+    <div class="box join">
+      <p>Day-to-day talk happens in our WhatsApp community. Announcements from the board are posted there first, and every housing group gets its own chat inside it.</p>
+      <a id="wa-link" href="https://chat.whatsapp.com/DfnlvwhWPfgKdy7ex9Crtb" target="_blank" rel="noopener">Join the WhatsApp community ↗</a>
+    </div>
+  </section>
+
+</main>
+
+<footer><div class="wrap"><div class="box"><span>Jokerweek 2027 · Ghent University</span><span>Draft · placeholders in dashed blue</span></div></div></footer>
+
+<script>
+// ---- Schedule (edit here) ----
+// [start, end, title, type, place, note]   type: talk | work | food | social
+const DAYS = [
+  { date: "2027-03-22", name: "Mon", long: "Monday", events: [
+    ["09:00","10:00","Opening & founding meeting","talk","Aula",""],
+    ["10:00","12:30","Morning speakers","talk","Aula","Speaker 1 · Speaker 2"],
+    ["12:30","13:30","Lunch","food","Common kitchen",""],
+    ["13:30","17:30","Site visit","work","Ghent",""],
+    ["19:00","22:00","Founding dinner","social","Common kitchen",""] ]},
+  { date: "2027-03-23", name: "Tue", long: "Tuesday", events: [
+    ["09:00","10:30","Morning speaker","talk","Aula","Speaker 3"],
+    ["10:30","12:30","Studio","work","Studio",""],
+    ["12:30","13:30","Lunch","food","Common kitchen",""],
+    ["13:30","18:00","Studio & tutoring","work","Studio",""],
+    ["20:00","22:30","Film night","social","Aula",""] ]},
+  { date: "2027-03-24", name: "Wed", long: "Wednesday", events: [
+    ["09:00","10:30","Morning speaker","talk","Aula","Speaker 4"],
+    ["10:30","12:30","Studio","work","Studio",""],
+    ["12:30","13:30","Lunch","food","Common kitchen",""],
+    ["14:00","16:00","Mid-week assembly","talk","Aula","Every group pins up"],
+    ["16:00","19:00","Studio","work","Studio",""],
+    ["21:00","24:00","Pub quiz","social","",""] ]},
+  { date: "2027-03-25", name: "Thu", long: "Thursday", events: [
+    ["09:00","10:30","Morning speaker","talk","Aula","Speaker 5"],
+    ["10:30","12:30","Studio","work","Studio",""],
+    ["12:30","13:30","Lunch","food","Common kitchen",""],
+    ["13:30","18:30","Studio & tutoring","work","Studio",""],
+    ["18:30","19:30","Dinner","food","Common kitchen",""],
+    ["19:30","23:00","Late studio","work","Studio",""] ]},
+  { date: "2027-03-26", name: "Fri", long: "Friday", events: [
+    ["09:00","12:30","Finishing","work","Studio",""],
+    ["12:30","13:30","Lunch","food","Common kitchen",""],
+    ["13:30","17:00","General assembly","talk","Aula","Final presentations to the jury"],
+    ["17:30","24:00","Drinks & party","social","",""] ]},
+];
+const TYPE = { talk: "Talk", work: "Studio", food: "Food", social: "Evening" };
+const START_H = 7, END_H = 24;
+
+// ---- Menu (edit here) ----
+const MENU = [
+  ["Monday",    "Lunch: soup and sandwiches", "Dinner: founding dinner"],
+  ["Tuesday",   "Lunch: soup and sandwiches", ""],
+  ["Wednesday", "Lunch: pasta, cooked by group 1", ""],
+  ["Thursday",  "Lunch: soup and sandwiches", "Dinner: curry for the late studio"],
+  ["Friday",    "Lunch: soup and sandwiches", "Drinks and snacks after the assembly"],
+];
+
+// ---- Locations (edit here) ----
+// [name, what happens there, address, latitude, longitude]
+const PLACES = [
+  ["Aula", "Talks and final presentations", "Plateaustraat 22, 9000 Gent", 51.0471, 3.7237],
+  ["Studio", "Group work all week", "", 51.0466, 3.7272],
+  ["Common kitchen", "Lunch and dinners", "", 51.0500, 3.7190],
+  ["The site", "Site visit on Monday", "", 51.0420, 3.7160],
+];
+
+// ---- Wiki (edit here) ----
+const WIKI = [
+  { id: "coop", title: "Cooperative housing", html: `
+    <h3>Cooperative housing</h3>
+    <p>In a housing cooperative the residents jointly own the buildings through the cooperative. Members buy a share, rent their home from the cooperative and decide together in the general assembly: one member, one vote.</p>
+    <p>Because the cooperative does not sell homes on, housing stays out of the speculative market and affordable for the next residents.</p>
+    <p><span class="mark">Uitbreiden met de focus voor studenten.</span></p>` },
+  { id: "refs", title: "References", html: `
+    <h3>Student housing cooperatives</h3>
+    <ul>
+      <li><b>La Ciguë</b>, Geneva: a cooperative that has housed students since 1986, first in buildings waiting for renovation, later also in its own new buildings.</li>
+      <li><b>Studentendorf Schlachtensee</b>, Berlin: a student village from the late 1950s. When it was threatened with demolition, residents and supporters founded a cooperative to save and run it.</li>
+      <li><b>Studentendorf Adlershof</b>, Berlin: a newer student village built by the same cooperative.</li>
+      <li><b>Edinburgh Student Housing Co-operative</b>, Edinburgh: a large, fully self-managed student co-op, where the residents run everything together.</li>
+      <li><b>Collegium Academicum</b>, Heidelberg: a student-run housing project in a new timber building, owned collectively and kept off the market.</li>
+    </ul>
+    <h3>Other housing cooperatives</h3>
+    <ul>
+      <li><b>Kalkbreite</b>, Zürich: cooperative housing above a tram depot, with cluster flats and shared spaces.</li>
+      <li><b>Mehr als Wohnen</b>, Zürich: a neighbourhood built by more than 50 cooperatives together.</li>
+      <li><b>La Borda</b>, Barcelona: a resident-built cooperative on public land with long-term leasehold.</li>
+      <li><b>Community Land Trust Gent</b>: separates land from building to keep homes affordable in Ghent.</li>
+    </ul>` },
+  { id: "site", title: "The site", html: `
+    <h3>The site</h3>
+    <p><span class="mark">Locatie, kaart, foto's, randvoorwaarden.</span></p>` },
+  { id: "words", title: "Glossary", html: `
+    <h3>Glossary</h3>
+    <dl class="gloss">
+      <dt>Share (aandeel)</dt><dd>A member's stake in the cooperative. It gives a vote, not a property.</dd>
+      <dt>General assembly</dt><dd>The meeting of all members, where the big decisions are taken.</dd>
+      <dt>Board</dt><dd>Members elected by the assembly to run daily business.</dd>
+      <dt>Leasehold (erfpacht)</dt><dd>Long-term right to use land you don't own, common when a city keeps the land.</dd>
+      <dt>Cluster flat</dt><dd>Private rooms grouped around a shared kitchen and living space.</dd>
+    </dl>` },
+];
+
+// ---- Routing ----
+const VIEWS = ["manifesto","schedule","membership","governance","statutes","food","locations","wiki","forum"];
+function route() {
+  const v = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : "manifesto";
+  VIEWS.forEach(n => document.getElementById("v-" + n).hidden = n !== v);
+  document.querySelectorAll("nav.tabs a").forEach(a => {
+    if (a.getAttribute("href") === "#" + v) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+  });
+  if (v === "schedule") scrollAgendaTo9();
+}
+addEventListener("hashchange", () => { route(); window.scrollTo(0, 0) });
+
+// ---- Agenda ----
+const cell = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--c"));
+const hours = hm => { const [h, m] = hm.split(":").map(Number); return h + m / 60 };
+const at = (date, hm) => hm === "24:00" ? new Date(date + "T23:59:59") : new Date(date + "T" + hm + ":00");
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+let selected = [0, 1];
+
+function renderAgenda() {
+  const now = new Date();
+  let html = `<div class="hours"><div class="corner"></div><div class="ticks">`;
+  for (let h = START_H; h <= END_H; h++) html += `<span style="left:calc(${(h - START_H) * 2} * var(--c))">${String(h).padStart(2, "0")}</span>`;
+  html += `</div></div>`;
+  DAYS.forEach((d, di) => {
+    html += `<div class="dayrow"><div class="daylabel"><b>${d.date.slice(8)}.03</b>${d.name}</div><div class="track">`;
+    d.events.forEach((e, ei) => {
+      const l = (hours(e[0]) - START_H) * 2, w = (hours(e[1]) - hours(e[0])) * 2;
+      const live = now >= at(d.date, e[0]) && now < at(d.date, e[1]);
+      const pressed = selected[0] === di && selected[1] === ei;
+      const lbl = e[3] === "work" || e[3] === "food" ? "lbl" : "";
+      html += `<button type="button" class="ev ${e[3]}${live ? " live" : ""}" id="ev-${di}-${ei}" data-d="${di}" data-e="${ei}" aria-pressed="${pressed}"
+        style="left:calc(${l} * var(--c));width:calc(${w} * var(--c) - 2px)"><span class="${lbl}">${e[2]}${w > 2 ? `<span class="t">${e[0]}–${e[1]}</span>` : ""}</span></button>`;
+    });
+    if (ymd(now) === d.date) {
+      const nh = now.getHours() + now.getMinutes() / 60;
+      if (nh >= START_H) html += `<span class="nowline" style="left:calc(${(nh - START_H) * 2} * var(--c))"></span>`;
+    }
+    html += `</div></div>`;
+  });
+  document.getElementById("agenda").innerHTML = html;
+  document.querySelectorAll(".ev").forEach(b => b.onclick = () => { selected = [+b.dataset.d, +b.dataset.e]; renderAgenda() });
+  renderDetail();
+}
+function renderDetail() {
+  const d = DAYS[selected[0]], e = d.events[selected[1]];
+  document.getElementById("detail").innerHTML =
+    `<span class="sub">${d.long} ${d.date.slice(8)}.03<br>${e[0]}–${e[1]}</span>
+     <div style="display:grid;gap:6px"><h3>${e[2]}</h3><p>${TYPE[e[3]]}${e[4] ? " · " + e[4] : ""}${e[5] ? " · " + e[5] : ""}</p><p><span class="mark">Placeholder: beschrijving volgt</span></p></div>`;
+}
+function scrollAgendaTo9() {
+  const s = document.getElementById("agenda-scroll");
+  requestAnimationFrame(() => { s.scrollLeft = (9 - START_H) * 2 * cell() });
+}
+
+// ---- Rows ----
+document.getElementById("menu").innerHTML = MENU.map(m =>
+  `<div class="row"><span class="k">${m[0]}</span><div><p>${m[1]}</p>${m[2] ? `<p>${m[2]}</p>` : ""}</div></div>`).join("");
+document.getElementById("places").innerHTML = PLACES.map(p =>
+  `<div class="row"><span class="k">${p[0]}</span><div><p>${p[1]}</p><p>${p[2]
+    ? `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p[2])}" target="_blank" rel="noopener">${p[2]} ↗</a>`
+    : `<span class="mark">Adres in te vullen</span>`}</p></div></div>`).join("");
+
+// ---- Wiki ----
+let currentWiki = WIKI[0].id;
+function renderWiki() {
+  document.getElementById("wiki-nav").innerHTML = WIKI.map(w =>
+    `<button type="button" id="wiki-${w.id}" aria-current="${w.id === currentWiki}" data-id="${w.id}">${w.title}</button>`).join("");
+  document.querySelectorAll("#wiki-nav button").forEach(b => b.onclick = () => { currentWiki = b.dataset.id; renderWiki() });
+  document.getElementById("wiki-page").innerHTML = WIKI.find(w => w.id === currentWiki).html;
+}
+
+
+// ---- Red thread: one line from the top of the page, weaving behind the boxes, through every circle ----
+function drawThread() {
+  const sec = document.getElementById("v-manifesto");
+  if (sec.hidden) return;
+  const r0 = sec.getBoundingClientRect(), W = r0.width;
+  const rel = el => { const r = el.getBoundingClientRect(); return { l: r.left - r0.left, r: r.right - r0.left, t: r.top - r0.top, b: r.bottom - r0.top } };
+  const title = rel(sec.querySelector(".titlebox")), art = rel(sec.querySelector(".manifesto")), nav = rel(document.getElementById("thread"));
+  const dots = [...sec.querySelectorAll(".dot")].map(d => { const r = rel(d); return [(r.l + r.r) / 2, (r.t + r.b) / 2] });
+  const narrow = W < 700;
+  const xR = narrow ? W * .86 : (art.r + W) / 2;
+  // polyline of alternating vertical / horizontal runs
+  const pts = [[title.l + (title.r - title.l) * .58, -r0.top - scrollY], ];
+  const g1 = (title.b + art.t) / 2, g2 = (art.b + nav.t) / 2 + 20;
+  pts.push([pts[0][0], g1], [xR, g1], [xR, g2], [dots[0][0], g2], [dots[0][0], dots[0][1]]);
+  for (let i = 1; i < dots.length; i++) {
+    const ym = (dots[i - 1][1] + dots[i][1]) / 2;
+    pts.push([dots[i - 1][0], ym], [dots[i][0], ym], [dots[i][0], dots[i][1]]);
+  }
+  pts.push([dots[dots.length - 1][0], r0.height + 40]);
+  // round every corner
+  const R = 30; let d = `M ${pts[0][0]} ${pts[0][1]}`;
+  for (let i = 1; i < pts.length - 1; i++) {
+    const [px, py] = pts[i - 1], [x, y] = pts[i], [nx, ny] = pts[i + 1];
+    const l1 = Math.hypot(x - px, y - py), l2 = Math.hypot(nx - x, ny - y);
+    const r = Math.min(R, l1 / 2, l2 / 2);
+    if (r < 1) { d += ` L ${x} ${y}`; continue }
+    const ax = x - (x - px) / l1 * r, ay = y - (y - py) / l1 * r, bx = x + (nx - x) / l2 * r, by = y + (ny - y) / l2 * r;
+    d += ` L ${ax} ${ay} Q ${x} ${y} ${bx} ${by}`;
+  }
+  d += ` L ${pts[pts.length - 1][0]} ${pts[pts.length - 1][1]}`;
+  document.getElementById("thread-path").setAttribute("d", d);
+}
+
+// ---- Scroll drawing ----
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+let samples = [], total = 0;
+function measureThread() {
+  const path = document.getElementById("thread-path");
+  if (!path.getAttribute("d")) return;
+  total = path.getTotalLength(); samples = [];
+  for (let l = 0; l <= total; l += 6) samples.push([l, path.getPointAtLength(l).y]);
+  path.style.strokeDasharray = total;
+  onScroll();
+}
+function onScroll() {
+  const sec = document.getElementById("v-manifesto");
+  if (sec.hidden) return;
+  const path = document.getElementById("thread-path");
+  if (reduceMotion || !samples.length) { path.style.strokeDashoffset = 0; }
+  else {
+    const target = innerHeight * .78 - sec.getBoundingClientRect().top;   // how far down the pen has reached
+    let len = total;
+    for (const [l, y] of samples) if (y > target) { len = l; break }
+    path.style.strokeDashoffset = total - len;
+  }
+  document.querySelectorAll("#v-manifesto .reveal, #v-manifesto .stop").forEach(el => {
+    if (el.getBoundingClientRect().top < innerHeight * .85) el.classList.add("in");
+  });
+}
+document.documentElement.classList.add("js-reveal");
+addEventListener("scroll", onScroll, { passive: true });
+
+// ---- Sketch lines: replace straight borders by smooth, slightly wobbly vector strokes ----
+function rng(seed) { return () => ((seed = (seed * 16807) % 2147483647) / 2147483647) - .5 }
+function smooth(pts, closed) {          // Catmull-Rom through points -> cubic beziers
+  const n = pts.length, P = i => pts[closed ? (i + n) % n : Math.max(0, Math.min(n - 1, i))];
+  let d = `M ${P(0)[0].toFixed(1)} ${P(0)[1].toFixed(1)}`;
+  for (let i = 0; i < (closed ? n : n - 1); i++) {
+    const p0 = P(i - 1), p1 = P(i), p2 = P(i + 1), p3 = P(i + 2);
+    d += ` C ${(p1[0] + (p2[0] - p0[0]) / 6).toFixed(1)} ${(p1[1] + (p2[1] - p0[1]) / 6).toFixed(1)} ${(p2[0] - (p3[0] - p1[0]) / 6).toFixed(1)} ${(p2[1] - (p3[1] - p1[1]) / 6).toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;
+  }
+  return d;
+}
+function wobblyRect(w, h, r, amp = 1.1) {
+  // each side is its own gently wavering stroke; corners stay crisp
+  const o = .8, C = [[o, o], [w - o, o], [w - o, h - o], [o, h - o]];
+  let d = "";
+  for (let k = 0; k < 4; k++) {
+    const [x1, y1] = C[k], [x2, y2] = C[(k + 1) % 4], len = Math.hypot(x2 - x1, y2 - y1);
+    const n = Math.max(2, Math.round(len / 80)), pts = [];
+    for (let i = 0; i <= n; i++) { const t = i / n, j = (i === 0 || i === n) ? 0 : r() * amp * 2;
+      pts.push([x1 + (x2 - x1) * t + (y1 === y2 ? 0 : j), y1 + (y2 - y1) * t + (y1 === y2 ? j : 0)]) }
+    d += (k ? " " : "") + smooth(pts, false);
+  }
+  return d;
+}
+function wobblyCircle(d, r) {
+  const n = 14, c = d / 2, pts = [];
+  for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2, rad = c - 1.5 + r() * 3.2; pts.push([c + Math.cos(a) * rad, c + Math.sin(a) * rad]) }
+  return smooth(pts, true);
+}
+const SK = ".box, .logo span, nav.tabs, .titlebox .tex, .stop .about";
+function sketchAll() {
+  document.querySelectorAll(SK).forEach((el, i) => {
+    if (!el.offsetParent) return;
+    const w = el.clientWidth, h = el.clientHeight;
+    if (el._sk === w + "x" + h) return; el._sk = w + "x" + h;
+    let svg = el.querySelector(":scope > .sk");
+    if (!svg) { svg = document.createElementNS("http://www.w3.org/2000/svg", "svg"); svg.setAttribute("class", "sk"); svg.setAttribute("aria-hidden", "true"); el.appendChild(svg) }
+    svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+    svg.innerHTML = `<path d="${wobblyRect(w, h, rng(i * 97 + 13))}"/>`;
+  });
+  document.querySelectorAll(".dot").forEach((el, i) => {
+    if (!el.offsetParent) return;
+    const d = el.offsetWidth; if (el._sk === d) return; el._sk = d;
+    let svg = el.querySelector(".ring");
+    if (!svg) { svg = document.createElementNS("http://www.w3.org/2000/svg", "svg"); svg.setAttribute("class", "ring"); svg.setAttribute("aria-hidden", "true"); el.prepend(svg) }
+    svg.setAttribute("viewBox", `0 0 ${d} ${d}`);
+    svg.innerHTML = `<path d="${wobblyCircle(d, rng(i * 31 + 7))}"/>`;
+  });
+}
+
+// ---- Manifesto: wrap every word so it can be inked in while scrolling ----
+(function () {
+  const wrap = node => {
+    [...node.childNodes].forEach(n => {
+      if (n.nodeType === 3) {
+        const frag = document.createDocumentFragment();
+        n.textContent.split(/(\s+)/).forEach(part => {
+          if (!part) return;
+          if (/^\s+$/.test(part)) frag.appendChild(document.createTextNode(part));
+          else { const sp = document.createElement("span"); sp.className = "w"; sp.textContent = part; frag.appendChild(sp) }
+        });
+        n.replaceWith(frag);
+      } else if (n.nodeType === 1) wrap(n);
+    });
+  };
+  document.querySelectorAll(".manifesto .reveal").forEach(wrap);
+})();
+let words = [], hls = [];
+function measureWords() {
+  words = [...document.querySelectorAll(".manifesto .w")].map(w => [w, w.getBoundingClientRect().top + scrollY]);
+  hls = [...document.querySelectorAll(".manifesto .hl")].map(h => { const ws = h.querySelectorAll(".w"); return [h, ws[ws.length - 1]] });
+}
+function inkWords() {
+  const line = Math.max(scrollY + innerHeight * .72, innerHeight * .95);
+  for (const [w, y] of words) w.classList.toggle("on", y < line);
+  for (const [h, last] of hls) h.classList.toggle("on", !!last && last.classList.contains("on"));
+}
+addEventListener("scroll", inkWords, { passive: true });
+
+// ---- Sketch map of Ghent (schematic, not to scale) ----
+// Sketch, not survey: rivers, streets and landmarks placed from approximate coordinates.
+const MAP = { lat0: 51.0625, lon0: 3.6990, dLat: .0285, dLon: .0450, W: 600, H: 600 };
+const P = ([lat, lon]) => [((lon - MAP.lon0) / MAP.dLon * MAP.W), ((MAP.lat0 - lat) / MAP.dLat * MAP.H)];
+const GEO = {
+  leie: [[51.0360, 3.6990], [51.0395, 3.7060], [51.0440, 3.7110], [51.0468, 3.7140], [51.0490, 3.7168], [51.0515, 3.7188], [51.0545, 3.7203], [51.0565, 3.7210], [51.0578, 3.7235], [51.0577, 3.7268], [51.0565, 3.7310], [51.0560, 3.7350], [51.0575, 3.7400], [51.0610, 3.7440]],
+  coupure: [[51.0490, 3.7168], [51.0515, 3.7128], [51.0540, 3.7085], [51.0563, 3.7045], [51.0585, 3.7005]],
+  ketelvest: [[51.0515, 3.7188], [51.0508, 3.7225], [51.0500, 3.7262], [51.0490, 3.7300], [51.0485, 3.7330]],
+  schelde: [[51.0360, 3.7440], [51.0400, 3.7400], [51.0440, 3.7360], [51.0485, 3.7330], [51.0520, 3.7345], [51.0560, 3.7350]],
+  lieve: [[51.0578, 3.7212], [51.0595, 3.7190], [51.0625, 3.7170]],
+  rail: [[51.0330, 3.6990], [51.0352, 3.7060], [51.0357, 3.7110], [51.0355, 3.7180], [51.0345, 3.7260], [51.0335, 3.7330], [51.0330, 3.7440]],
+  streets: [
+    [[51.0425, 3.7270], [51.0450, 3.7262], [51.0475, 3.7255], [51.0503, 3.7245]],            // Sint-Pietersnieuwstraat
+    [[51.0503, 3.7245], [51.0512, 3.7225], [51.0530, 3.7217], [51.0547, 3.7212]],            // Kouter - Veldstraat
+    [[51.0362, 3.7120], [51.0400, 3.7155], [51.0440, 3.7185], [51.0470, 3.7205], [51.0500, 3.7225]], // Kortrijksesteenweg - Nederkouter
+    [[51.0428, 3.7300], [51.0418, 3.7240], [51.0405, 3.7190]],                                // Overpoort side
+    [[51.0547, 3.7212], [51.0560, 3.7240], [51.0570, 3.7263], [51.0565, 3.7300]],            // Korenmarkt - Vrijdagmarkt
+    [[51.0480, 3.7310], [51.0505, 3.7290], [51.0530, 3.7270], [51.0545, 3.7255]],            // Zuid - Kouter
+    [[51.0370, 3.7110], [51.0380, 3.7180], [51.0390, 3.7250], [51.0400, 3.7330]],            // Citadel side
+  ],
+  parks: [[[51.0395, 3.7175], [51.0395, 3.7265], [51.0360, 3.7270], [51.0352, 3.7180]],   // Citadelpark
+          [[51.0482, 3.7100], [51.0482, 3.7140], [51.0460, 3.7145], [51.0458, 3.7105]]],  // Bijloke
+};
+const LANDMARKS = [
+  ["Gravensteen", 51.0573, 3.7207, "castle"], ["Sint-Niklaaskerk", 51.0544, 3.7216, "tower"], ["Belfort", 51.0537, 3.7249, "tower"],
+  ["Sint-Baafs", 51.0530, 3.7270, "tower"], ["Boekentoren", 51.0446, 3.7253, "tower"], ["Plateau", 51.0471, 3.7237, "uni"],
+  ["UFO", 51.0468, 3.7280, "ufo"], ["Gent-Sint-Pieters", 51.0357, 3.7108, "station"], ["Citadelpark", 51.0378, 3.7222, "label"],
+  ["Coupure", 51.0545, 3.7078, "water"], ["Leie", 51.0420, 3.7090, "water"], ["Schelde", 51.0430, 3.7385, "water"],
+  ["Vrijdagmarkt", 51.0570, 3.7263, "square"], ["Korenmarkt", 51.0547, 3.7212, "square"], ["Bijloke", 51.0470, 3.7122, "label"],
+];
+function distToLine(pt, line) {
+  let best = 1e9;
+  for (let i = 1; i < line.length; i++) { const [ax, ay] = line[i - 1], [bx, by] = line[i], dx = bx - ax, dy = by - ay;
+    const t = Math.max(0, Math.min(1, ((pt[0] - ax) * dx + (pt[1] - ay) * dy) / (dx * dx + dy * dy)));
+    best = Math.min(best, Math.hypot(pt[0] - ax - t * dx, pt[1] - ay - t * dy)) }
+  return best;
+}
+function mapSVG() {
+  const pl = k => GEO[k].map(P);
+  const waters = ["leie", "coupure", "ketelvest", "schelde", "lieve"].map(pl);
+  const streets = GEO.streets.map(l => l.map(P)), parks = GEO.parks.map(l => l.map(P)), rail = pl("rail");
+  // city fabric: little building blocks scattered over the old town, kept off water, streets and parks
+  const r = rng(2027), centre = P([51.0510, 3.7230]); let blocks = "";
+  for (let gy = 10; gy < 600; gy += 15) for (let gx = 10; gx < 600; gx += 15) {
+    const pt = [gx + r() * 6, gy + r() * 6], dc = Math.hypot((pt[0] - centre[0]) * .9, pt[1] - centre[1]);
+    if (dc > 330 || r() + .5 < dc / 420) continue;
+    if (waters.some(w => distToLine(pt, w) < 12) || streets.some(st => distToLine(pt, st) < 6) || distToLine(pt, rail) < 8) continue;
+    if (parks.some(pk => pt[0] > Math.min(...pk.map(q => q[0])) && pt[0] < Math.max(...pk.map(q => q[0])) && pt[1] > Math.min(...pk.map(q => q[1])) && pt[1] < Math.max(...pk.map(q => q[1])))) continue;
+    const w = 6 + (r() + .5) * 6, h = 5 + (r() + .5) * 5, a = r() * 30;
+    blocks += `<rect x="${(pt[0] - w / 2).toFixed(1)}" y="${(pt[1] - h / 2).toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" transform="rotate(${a.toFixed(0)} ${pt[0].toFixed(1)} ${pt[1].toFixed(1)})"/>`;
+  }
+  const icon = (t, x, y) => ({
+    tower: `<path class="lm" d="M ${x - 4} ${y + 6} L ${x - 4} ${y - 6} L ${x} ${y - 13} L ${x + 4} ${y - 6} L ${x + 4} ${y + 6} Z"/>`,
+    castle: `<path class="lm" d="M ${x - 8} ${y + 6} V ${y - 5} h 3 v 3 h 3 v -3 h 4 v 3 h 3 v -3 h 3 V ${y + 6} Z"/>`,
+    uni: `<rect class="lm" x="${x - 7}" y="${y - 6}" width="14" height="12"/><path class="lm" d="M ${x - 9} ${y - 6} L ${x} ${y - 12} L ${x + 9} ${y - 6}"/>`,
+    ufo: `<ellipse class="lm" cx="${x}" cy="${y}" rx="10" ry="4"/><path class="lm" d="M ${x - 5} ${y - 2} Q ${x} ${y - 10} ${x + 5} ${y - 2}"/>`,
+    station: `<rect class="lm" x="${x - 10}" y="${y - 5}" width="20" height="10"/><path class="lm" d="M ${x - 10} ${y} H ${x + 10}"/>`,
+    square: `<rect class="sq" x="${x - 6}" y="${y - 6}" width="12" height="12"/>`,
+  })[t] || "";
+  const marks = LANDMARKS.map(([n, la, lo, t]) => { const [x, y] = P([la, lo]);
+    return `${icon(t, x, y)}<text class="${t === "water" ? "water" : t === "label" ? "soft" : ""}" x="${x + (t === "water" || t === "label" ? 0 : 12)}" y="${y + 4}">${n}</text>` }).join("");
+  const pins = PLACES.map(p => { const [x, y] = P([p[3], p[4]]);
+    return `<g class="pin${p[2] ? "" : " todo"}"><path d="M ${x} ${y} c -6 -8 -9 -11 -9 -15 a 9 9 0 1 1 18 0 c 0 4 -3 7 -9 15 Z"/><text x="${x - 12}" y="${y - 12}" text-anchor="end">${p[0]}</text></g>` }).join("");
+  const line = l => smooth(l, false);
+  return `<svg viewBox="0 0 600 600" aria-hidden="true">
+    ${parks.map(pk => `<path class="park" d="${smooth(pk, true)}"/>`).join("")}
+    <g class="blocks">${blocks}</g>
+    ${streets.map(st => `<path class="street" d="${line(st)}"/>`).join("")}
+    <path class="rail" d="${line(rail)}"/>
+    ${waters.map(w => `<path class="river" d="${line(w)}"/>`).join("")}${waters.map(w => `<path class="river-edge" d="${line(w)}"/>`).join("")}
+    ${marks}${pins}
+    <text x="14" y="22">Gent · sketch, not to scale</text></svg>`;
+}
+function drawMaps() {
+  const svg = mapSVG();
+  document.querySelectorAll(".map").forEach(m => {
+    m.innerHTML = svg;
+    const el = m.querySelector("svg");
+    if (m.dataset.map === "small") { el.setAttribute("viewBox", "10 145 580 205"); el.setAttribute("preserveAspectRatio", "xMidYMid slice") }
+  });
+}
+
+// ---- Cursor halo that follows the mouse with a little lag ----
+(function () {
+  if (!matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+  const els = [...document.querySelectorAll(".halo, .halo-glow")];
+  let x = -200, y = -200, tx = x, ty = y, running = false;
+  const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const step = () => {
+    x += (tx - x) * (still ? 1 : .22); y += (ty - y) * (still ? 1 : .22);
+    els.forEach(el => el.style.transform = `translate(${x}px, ${y}px)`);
+    if (Math.abs(tx - x) + Math.abs(ty - y) > .3) requestAnimationFrame(step); else running = false;
+  };
+  addEventListener("pointermove", e => { tx = e.clientX; ty = e.clientY; els.forEach(el => el.classList.add("on"));
+    if (!running) { running = true; requestAnimationFrame(step) } }, { passive: true });
+  document.addEventListener("pointerleave", () => els.forEach(el => el.classList.remove("on")));
+})();
+const redraw = () => { sketchAll(); drawThread(); measureThread(); measureWords(); inkWords() };
+addEventListener("resize", redraw);
+addEventListener("hashchange", redraw);
+document.fonts && document.fonts.ready.then(redraw);
+
+// ---- Hand-drawn graph paper: a 400px tile of slightly wavering pen lines ----
+(function () {
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647 - .5;
+  const line = (horiz, k) => { let d = ""; const steps = 8;
+    for (let i = 0; i <= steps; i++) { const t = i * 400 / steps, o = k * 40 + 20 + (i === 0 || i === steps ? 0 : rnd() * 1.8);
+      d += (i ? " L " : "M ") + (horiz ? `${t} ${o}` : `${o} ${t}`) } return d };
+  let paths = "";
+  for (let k = 0; k < 10; k++) paths += `<path d="${line(true, k)}"/><path d="${line(false, k)}"/>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><g fill="none" stroke="rgb(123,30,46)" stroke-opacity=".24" stroke-width="1" stroke-linecap="round">${paths}</g></svg>`;
+  document.querySelector(".paper-grid").style.backgroundImage = `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+})();
+
+if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
+drawMaps(); renderAgenda(); renderWiki(); route(); redraw();
+setInterval(renderAgenda, 60000);
+</script>
+
+</body>
+</html>
