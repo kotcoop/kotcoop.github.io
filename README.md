@@ -1,4 +1,4 @@
-# KOTCOOP · Jokerweek 2027
+# COKOT · Jokerweek 2027
 
 Website (installable web-app) for the Jokerweek of the master's students Engineering Architecture at UGent, 22–26 March 2027: a student housing cooperative in Ghent.
 
