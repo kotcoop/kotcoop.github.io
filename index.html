@@ -219,6 +219,16 @@ body { background-image: none; background-color: transparent }
 .map .pin path { fill: var(--ink); stroke: var(--paper); stroke-width: 1.5 }
 .map .hq rect, .map .hq path { fill: var(--ink); stroke: var(--paper); stroke-width: 1.5; stroke-linejoin: round }
 .map .hq .chip { fill: var(--ink); stroke: none }
+/* Membership dropdown in the menu */
+nav.tabs .dd { position: relative; flex: 1 1 auto; display: flex }
+nav.tabs .dd summary { line-height: 1; list-style: none; cursor: pointer; flex: 1; text-align: center; font: inherit; text-transform: uppercase; white-space: nowrap; text-decoration: underline; text-underline-offset: 3px }
+nav.tabs .dd summary::-webkit-details-marker { display: none }
+nav.tabs .dd summary::after { content: " ▾"; text-decoration: none; display: inline-block; margin-left: 4px; transition: transform .2s }
+nav.tabs .dd[open] summary::after { transform: rotate(180deg) }
+nav.tabs .dd summary:hover, nav.tabs .dd[open] summary { background: var(--ink); color: #fff; text-decoration: none }
+nav.tabs .dd.cur summary { background: var(--blue); color: #fff; text-decoration: none }
+nav.tabs .ddm { position: absolute; top: 100%; left: -1.5px; z-index: 20; min-width: 100%; display: grid; background: var(--paper); border: 1.5px solid var(--ink); box-shadow: 4px 4px 0 var(--ink); animation: drop .3s cubic-bezier(.3,1.4,.5,1) both }
+nav.tabs .ddm a { text-align: left; flex: none; justify-content: flex-start }
 /* entry gate + member list */
 .gate { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px; background: color-mix(in srgb, var(--paper) 92%, transparent) }
 .gate[hidden] { display: none }
@@ -276,9 +286,9 @@ nav.tabs a { font-size: 14px; padding: 14px 8px; letter-spacing: 0 }
 @media (max-width: 760px) { nav.tabs a { font-size: 13px; padding: 12px 11px } }
 /* header: just the menu, full width, big buttons */
 nav.tabs { margin-left: 0; flex: 1 1 auto; justify-content: space-between }
-nav.tabs a { font-size: clamp(12px, 1.12vw, 15px); padding: 16px clamp(5px, .6vw, 10px); letter-spacing: .01em; flex: 1 1 auto; text-align: center }
+nav.tabs a, nav.tabs .dd summary { display: flex; align-items: center; justify-content: center; line-height: 1; font-size: clamp(12px, 1.12vw, 15px); padding: 16px clamp(5px, .6vw, 10px); letter-spacing: .01em; flex: 1 1 auto; text-align: center }
 @media (min-width: 761px) { nav.tabs { flex-wrap: nowrap } }
-@media (max-width: 760px) { nav.tabs { flex-wrap: wrap; overflow: visible } nav.tabs a { font-size: 12.5px; padding: 11px 7px; flex: 1 1 auto } }
+@media (max-width: 760px) { nav.tabs { flex-wrap: wrap; overflow: visible } nav.tabs a, nav.tabs .dd summary { font-size: 12.5px; padding: 11px 7px; flex: 1 1 auto } nav.tabs .ddm a { padding: 14px 12px } }
 /* manifesto and the thread of circles side by side, so the buttons are there from the start */
 .mrow { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 36px; align-items: start }
 .mrow .manifesto { max-width: none }
@@ -309,15 +319,19 @@ nav.tabs a { font-size: clamp(12px, 1.12vw, 15px); padding: 16px clamp(5px, .6vw
   <div class="wrap">
     <nav class="tabs" aria-label="Sections">
       <a href="#manifesto">Manifesto</a>
-      <a href="#schedule">Schedule</a>
+      <details class="dd" data-views="schedule food">
+        <summary>Schedule</summary>
+        <div class="ddm"><a href="#schedule">Week programme</a><a href="#food">Food</a></div>
+      </details>
       <a href="#locations">Locations</a>
       <a href="#forum">Forum</a>
       <a href="#wiki">Wiki</a>
-      <a href="#membership">Becoming a member</a>
-      <a href="#members">Members</a>
+      <details class="dd" data-views="membership members">
+        <summary>Membership</summary>
+        <div class="ddm"><a href="#membership">Becoming a member</a><a href="#members">Members</a></div>
+      </details>
       <a href="#governance">Governance</a>
       <a href="#statutes">Statutes</a>
-      <a href="#food">Food</a>
     </nav>
   </div>
 </header>
@@ -610,6 +624,7 @@ function route() {
   document.querySelectorAll("nav.tabs a").forEach(a => {
     if (a.getAttribute("href") === "#" + v) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
   });
+  document.querySelectorAll("nav.tabs .dd").forEach(dd => { dd.classList.toggle("cur", dd.dataset.views.split(" ").includes(v)); dd.open = false });
   if (v === "schedule") scrollAgendaTo9();
 }
 addEventListener("hashchange", () => { route(); window.scrollTo(0, 0) });
@@ -931,6 +946,9 @@ document.fonts && document.fonts.ready.then(redraw);
 
 if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
 drawMaps(); renderAgenda(); renderWiki(); route(); redraw();
+
+// menu dropdowns: only one open at a time, close when clicking elsewhere
+document.addEventListener("click", e => document.querySelectorAll("nav.tabs .dd[open]").forEach(dd => { if (!dd.contains(e.target)) dd.open = false }));
 
 // ---- Members: sign your name at the door, then see the list ----
 // To share the list between everyone, fill in a Google Form + published Sheet here (see README).
