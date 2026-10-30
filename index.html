@@ -275,7 +275,7 @@ nav.tabs a { font-size: 14px; padding: 14px 8px; letter-spacing: 0 }
 nav.tabs { margin-left: 0; flex: 1 1 auto; justify-content: space-between }
 nav.tabs a { font-size: clamp(12px, 1.12vw, 15px); padding: 16px clamp(5px, .6vw, 10px); letter-spacing: .01em; flex: 1 1 auto; text-align: center }
 @media (min-width: 761px) { nav.tabs { flex-wrap: nowrap } }
-@media (max-width: 760px) { nav.tabs a { font-size: 14px; padding: 14px 12px; flex: none } }
+@media (max-width: 760px) { nav.tabs { flex-wrap: wrap; overflow: visible } nav.tabs a { font-size: 12.5px; padding: 11px 7px; flex: 1 1 auto } }
 /* manifesto and the thread of circles side by side, so the buttons are there from the start */
 .mrow { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 36px; align-items: start }
 .mrow .manifesto { max-width: none }
