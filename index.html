@@ -70,7 +70,7 @@ nav.tabs a:active, nav.tabs a[aria-current="page"] { background: var(--blue); co
 .stop:nth-child(4n+2) { padding-right: 6% } .stop:nth-child(4n) { padding-right: 20% }
 .dot { flex: none; width: var(--d, 170px); aspect-ratio: 1; border-radius: 50%; display: grid; place-items: center; text-align: center; padding: 14px;
   background: var(--paper); border: 2.5px solid var(--ink); color: var(--ink); text-decoration: none; position: relative; z-index: 1;
-  font: 400 clamp(15px, 2.2vw, 21px)/1.05 var(--display); text-transform: uppercase; transition: background-color .15s, color .15s, border-color .15s, transform .15s }
+  font: 400 clamp(14px, 1.9vw, 19px)/1.05 var(--display); text-transform: uppercase; transition: background-color .15s, color .15s, border-color .15s, transform .15s }
 .dot:hover { background: var(--ink); color: #fff; transform: scale(1.04) }
 .dot:active { background: var(--blue); border-color: var(--blue); color: #fff }
 .stop .about { display: grid; gap: 4px; max-width: 34ch; min-width: 0; background: var(--paper); padding: 6px 10px; border: 1px solid var(--grid) }
@@ -239,6 +239,16 @@ a.mapbox:active .maptag { background: var(--blue); color: #fff; border-color: va
 /* logo: the cooperative's name, set large */
 .logo span:first-child { font: 500 clamp(26px, 3.4vw, 40px)/0.95 var(--display); letter-spacing: -.01em; padding: 10px 14px 8px }
 .logo span:nth-child(2) { font-size: 12px; padding: 7px 14px 6px; font-family: var(--mono); letter-spacing: .06em }
+/* bigger menu buttons */
+nav.tabs a { font-size: 14px; padding: 14px 8px; letter-spacing: 0 }
+@media (min-width: 761px) { nav.tabs { gap: 0 } }
+@media (min-width: 761px) { nav.tabs { flex-wrap: wrap; overflow: visible } }
+@media (max-width: 760px) { nav.tabs a { font-size: 13px; padding: 12px 11px } }
+/* header: just the menu, full width, big buttons */
+nav.tabs { margin-left: 0; flex: 1 1 auto; justify-content: space-between }
+nav.tabs a { font-size: clamp(14px, 1.45vw, 17px); padding: 16px clamp(8px, 1vw, 14px); letter-spacing: .02em; flex: 1 1 auto; text-align: center }
+@media (min-width: 761px) { nav.tabs { flex-wrap: nowrap } }
+@media (max-width: 760px) { nav.tabs a { font-size: 14px; padding: 14px 12px; flex: none } }
 </style>
 </head>
 <body>
@@ -247,7 +257,6 @@ a.mapbox:active .maptag { background: var(--blue); color: #fff; border-color: va
 <div class="halo-glow" aria-hidden="true"></div><div class="halo" aria-hidden="true"></div>
 <header class="top">
   <div class="wrap">
-    <a class="logo" href="#manifesto" aria-label="KOTCOOP! home"><span>Kotcoop!</span><span>Jokerweek 2027</span></a>
     <nav class="tabs" aria-label="Sections">
       <a href="#manifesto">Manifesto</a>
       <a href="#schedule">Schedule</a>
@@ -283,14 +292,14 @@ a.mapbox:active .maptag { background: var(--blue); color: #fff; border-color: va
       <p class="reveal">The <span class="hl">financial structure</span> also works differently. The money residents contribute is primarily used to <span class="hl">cover the costs of the property</span>, <span class="hl">maintain and improve the building</span>, and ensure the <span class="hl">long-term continuity</span> of the cooperative. By prioritising these goals over private profit, the cooperative can work towards <span class="hl">keeping housing affordable over time</span>. This way we can stop following the trend of increasing rents.</p>
     </article>
     <nav class="thread" id="thread" aria-label="Sections">
-      <div class="stop"><a class="dot" href="#schedule" style="--d:190px">Schedule</a><p class="about"><b>01</b><span>Five days, hour by hour.</span></p></div>
-      <div class="stop"><a class="dot" href="#locations" style="--d:170px">Locations</a><p class="about"><b>02</b><span>Where we meet, work and present.</span></p></div>
-      <div class="stop"><a class="dot" href="#forum" style="--d:172px">Forum</a><p class="about"><b>03</b><span>Our WhatsApp community.</span></p></div>
-      <div class="stop"><a class="dot" href="#wiki" style="--d:175px">Wiki</a><p class="about"><b>04</b><span>Background, references, words.</span></p></div>
-      <div class="stop"><a class="dot" href="#membership" style="--d:135px">Becoming a member</a><p class="about"><b>05</b><span>Groups, what to bring, where to be.</span></p></div>
-      <div class="stop"><a class="dot" href="#governance" style="--d:165px">Governance</a><p class="about"><b>06</b><span>Who runs the cooperative.</span></p></div>
-      <div class="stop"><a class="dot" href="#statutes" style="--d:150px">Statutes</a><p class="about"><b>07</b><span>What every member agrees to.</span></p></div>
-      <div class="stop"><a class="dot" href="#food" style="--d:185px">Food</a><p class="about"><b>08</b><span>The common kitchen's menu.</span></p></div>
+      <div class="stop"><a class="dot" href="#schedule" style="--d:178px">Schedule</a><p class="about"><b>01</b><span>Five days, hour by hour.</span></p></div>
+      <div class="stop"><a class="dot" href="#locations" style="--d:172px">Locations</a><p class="about"><b>02</b><span>Where we meet, work and present.</span></p></div>
+      <div class="stop"><a class="dot" href="#forum" style="--d:150px">Forum</a><p class="about"><b>03</b><span>Our WhatsApp community.</span></p></div>
+      <div class="stop"><a class="dot" href="#wiki" style="--d:140px">Wiki</a><p class="about"><b>04</b><span>Background, references, words.</span></p></div>
+      <div class="stop"><a class="dot" href="#membership" style="--d:188px">Becoming a member</a><p class="about"><b>05</b><span>Groups, what to bring, where to be.</span></p></div>
+      <div class="stop"><a class="dot" href="#governance" style="--d:188px">Governance</a><p class="about"><b>06</b><span>Who runs the cooperative.</span></p></div>
+      <div class="stop"><a class="dot" href="#statutes" style="--d:165px">Statutes</a><p class="about"><b>07</b><span>What every member agrees to.</span></p></div>
+      <div class="stop"><a class="dot" href="#food" style="--d:140px">Food</a><p class="about"><b>08</b><span>The common kitchen's menu.</span></p></div>
     </nav>
   </section>
 
