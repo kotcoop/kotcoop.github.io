@@ -219,6 +219,23 @@ body { background-image: none; background-color: transparent }
 .map .pin path { fill: var(--ink); stroke: var(--paper); stroke-width: 1.5 }
 .map .hq rect, .map .hq path { fill: var(--ink); stroke: var(--paper); stroke-width: 1.5; stroke-linejoin: round }
 .map .hq .chip { fill: var(--ink); stroke: none }
+/* entry gate + member list */
+.gate { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px; background: color-mix(in srgb, var(--paper) 92%, transparent) }
+.gate[hidden] { display: none }
+.gate form { width: min(560px, 100%); padding: 28px 26px 24px; display: grid; gap: 18px }
+.gate .lead { font: 500 15px/1.3 var(--mono); text-transform: uppercase; letter-spacing: .04em; color: var(--ink) }
+.gate label { display: grid; gap: 6px; font: 500 12px var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--ink) }
+.gate input { font: 400 clamp(22px, 4vw, 30px)/1.2 var(--display); color: var(--text); background: transparent; border: 0; border-bottom: 2px solid var(--ink); padding: 6px 2px; outline: none; border-radius: 0 }
+.gate input:focus { border-bottom-color: var(--blue) }
+.btn { justify-self: start; font: 500 13px/1 var(--mono); text-transform: uppercase; letter-spacing: .06em; color: #fff; background: var(--ink); border: 0; padding: 14px 18px; cursor: pointer; text-decoration: none; display: inline-block }
+.btn:hover { background: var(--ink) } .btn:active { background: var(--blue) }
+.gate .skip { font: 12px var(--mono); color: var(--ink); justify-self: start }
+.members { padding: 18px 22px 26px }
+.members ol { list-style: none; margin: 0 0 22px; padding: 0; columns: 3 220px; column-gap: 28px }
+.members li { break-inside: avoid; display: flex; gap: 10px; align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--grid); font: 400 clamp(18px, 2.2vw, 24px)/1.2 var(--display) }
+.members li span { font: 500 11px var(--mono); color: var(--ink); min-width: 3ch }
+.members li.me { color: var(--blue) }
+.members li.new { animation: drop .6s cubic-bezier(.3,1.6,.5,1) both }
 /* motion: title letters drop in, "!" wiggles, circles tilt, Plateau pulses */
 h1 .ch { display: inline-block; animation: drop .6s cubic-bezier(.3,1.6,.5,1) both; animation-delay: calc(var(--i) * 60ms) }
 h1 .ch.bang { transform-origin: 50% 90%; animation: drop .6s cubic-bezier(.3,1.6,.5,1) both, wiggle 3.5s ease-in-out 1.2s infinite; animation-delay: calc(var(--i) * 60ms), 1.2s }
@@ -301,6 +318,15 @@ nav.tabs a { font-size: clamp(14px, 1.45vw, 17px); padding: 16px clamp(8px, 1vw,
   </div>
 </header>
 
+<div class="gate" id="gate" hidden>
+  <form class="box" id="gate-form" autocomplete="off">
+    <h1>KOTCOOP!</h1>
+    <span class="lead">Become a member →</span>
+    <label>Your name<input id="gate-name" name="name" maxlength="40" required placeholder="name"></label>
+    <button class="btn" type="submit">Sign &amp; enter</button>
+    <a class="skip" href="#manifesto" id="gate-skip">just looking around</a>
+  </form>
+</div>
 <main class="wrap">
 
   <!-- MANIFESTO -->
@@ -360,10 +386,23 @@ nav.tabs a { font-size: clamp(14px, 1.45vw, 17px); padding: 16px clamp(8px, 1vw,
       <div class="tex stipple" aria-hidden="true"></div>
     </div>
     <div class="box rows">
+      <div class="row"><span class="k">§ 1.0 Join</span><p>Sign with your name and you appear on the <a href="#members">list of members</a>.</p></div>
       <div class="row"><span class="k">§ 1.1 Who</span><p>All master's students Engineering Architecture taking part in the Jokerweek. <span class="mark">Aantal studenten in te vullen.</span></p></div>
       <div class="row"><span class="k">§ 1.2 Group</span><p>You are placed in a housing group of <span class="mark">X</span> members. Each group forms its own cooperative and designs one project. <span class="mark">Groepsindeling volgt.</span></p></div>
       <div class="row"><span class="k">§ 1.3 Monday</span><p>Founding meeting at 09:00. <span class="mark">Locatie in te vullen.</span></p></div>
       <div class="row"><span class="k">§ 1.4 Bring</span><div><ul><li>Laptop and charger</li><li>Sketch materials</li><li><span class="mark">Verder aan te vullen</span></li></ul></div></div>
+    </div>
+  </section>
+
+  <!-- MEMBERS -->
+  <section class="view" id="v-members" hidden>
+    <div class="titlebox">
+      <div class="box"><h2>Members</h2><span class="sub" id="members-count">One member, one vote</span></div>
+      <div class="tex hatch" aria-hidden="true"></div>
+    </div>
+    <div class="box members">
+      <ol id="members-list"></ol>
+      <a class="btn" href="#manifesto">Enter KOTCOOP! →</a>
     </div>
   </section>
 
@@ -560,7 +599,7 @@ const WIKI = [
 ];
 
 // ---- Routing ----
-const VIEWS = ["manifesto","schedule","membership","governance","statutes","food","locations","wiki","forum"];
+const VIEWS = ["manifesto","schedule","membership","members","governance","statutes","food","locations","wiki","forum"];
 function route() {
   const v = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : "manifesto";
   VIEWS.forEach(n => document.getElementById("v-" + n).hidden = n !== v);
@@ -888,6 +927,50 @@ document.fonts && document.fonts.ready.then(redraw);
 
 if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
 drawMaps(); renderAgenda(); renderWiki(); route(); redraw();
+
+// ---- Members: sign your name at the door, then see the list ----
+// To share the list between everyone, fill in a Google Form + published Sheet here (see README).
+const MEMBERS = { formUrl: "", field: "", csvUrl: "" };
+const store = { get(k) { try { return localStorage.getItem(k) } catch (e) { return null } },
+                set(k, v) { try { localStorage.setItem(k, v) } catch (e) {} } };
+async function loadMembers() {
+  let names = [];
+  if (MEMBERS.csvUrl) try {
+    const csv = await (await fetch(MEMBERS.csvUrl, { cache: "no-store" })).text();
+    names = csv.trim().split(/\r?\n/).slice(1).map(l => (l.match(/^(?:"[^"]*"|[^,]*),("(?:[^"]|"")*"|[^,]*)/) || [])[1] || "")
+      .map(n => n.replace(/^"|"$/g, "").replace(/""/g, '"').trim()).filter(Boolean);
+  } catch (e) {}
+  const mine = JSON.parse(store.get("kotcoop-local") || "[]");
+  for (const n of mine) if (!names.includes(n)) names.push(n);
+  return names;
+}
+async function renderMembers(fresh) {
+  const names = await loadMembers(), me = store.get("kotcoop-name");
+  document.getElementById("members-count").textContent = names.length + (names.length === 1 ? " member" : " members") + " · one member, one vote";
+  document.getElementById("members-list").innerHTML = names.map((n, i) =>
+    `<li class="${n === me ? "me" : ""}${n === fresh ? " new" : ""}"><span>${String(i + 1).padStart(3, "0")}</span>${n.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c])}</li>`).join("");
+  sketchAll();
+}
+(function () {
+  const gate = document.getElementById("gate");
+  if (!store.get("kotcoop-name") && !store.get("kotcoop-skip")) gate.hidden = false;
+  document.getElementById("gate-skip").onclick = () => { store.set("kotcoop-skip", "1"); gate.hidden = true };
+  document.getElementById("gate-form").onsubmit = async e => {
+    e.preventDefault();
+    const name = document.getElementById("gate-name").value.trim().replace(/\s+/g, " ");
+    if (!name) return;
+    store.set("kotcoop-name", name);
+    const mine = JSON.parse(store.get("kotcoop-local") || "[]"); if (!mine.includes(name)) mine.push(name);
+    store.set("kotcoop-local", JSON.stringify(mine));
+    if (MEMBERS.formUrl) try { await fetch(MEMBERS.formUrl, { method: "POST", mode: "no-cors", body: new URLSearchParams({ [MEMBERS.field]: name }) }) } catch (e) {}
+    gate.hidden = true;
+    location.hash = "#members";
+    renderMembers(name);
+  };
+  if (!gate.hidden) sketchAll();
+  addEventListener("hashchange", () => { if (location.hash === "#members") renderMembers() });
+  if (location.hash === "#members") renderMembers();
+})();
 
 // ---- Motion: title letters, and "boiling" hand-drawn circles (redrawn a few times a second like animation) ----
 (function () {
