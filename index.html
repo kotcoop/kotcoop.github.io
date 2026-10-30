@@ -930,7 +930,7 @@ drawMaps(); renderAgenda(); renderWiki(); route(); redraw();
 
 // ---- Members: sign your name at the door, then see the list ----
 // To share the list between everyone, fill in a Google Form + published Sheet here (see README).
-const MEMBERS = { formUrl: "", field: "", csvUrl: "" };
+const MEMBERS = { formUrl: "https://docs.google.com/forms/d/e/1FAIpQLSfLKr4rhJEMEQRjNWPaAQNzfxg7IDy61cyEloahUfrMi8Im0w/formResponse", field: "entry.156991389", csvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSRkLST_TXsk5t7tS2po2vRnb-DhBQiKyrZnBsw6b37XxoZdDAsOZq-RoaaSX1q5WXV-bCB6C-oHwuv/pub?output=csv" };
 const store = { get(k) { try { return localStorage.getItem(k) } catch (e) { return null } },
                 set(k, v) { try { localStorage.setItem(k, v) } catch (e) {} } };
 async function loadMembers() {
