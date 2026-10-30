@@ -235,6 +235,9 @@ a.mapbox:active .maptag { background: var(--blue); color: #fff; border-color: va
   background: radial-gradient(circle, color-mix(in srgb, var(--blue) 10%, transparent) 0 45%, transparent 70%); opacity: 0; transition: opacity .25s }
 .halo.on, .halo-glow.on { opacity: 1 }
 @media (hover: none), (pointer: coarse) { .halo, .halo-glow { display: none } }
+/* logo: the cooperative's name, set large */
+.logo span:first-child { font: 500 clamp(26px, 3.4vw, 40px)/0.95 var(--display); letter-spacing: -.01em; padding: 10px 14px 8px }
+.logo span:nth-child(2) { font-size: 12px; padding: 7px 14px 6px; font-family: var(--mono); letter-spacing: .06em }
 </style>
 </head>
 <body>
