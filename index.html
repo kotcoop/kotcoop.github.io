@@ -510,7 +510,8 @@ nav.tabs a, nav.tabs .dd summary { display: flex; align-items: center; justify-c
 <div class="gate" id="ios-help" hidden>
   <div class="box ioshelp">
     <h3>Install KOTCOOP!</h3>
-    <ol><li>Tap the share icon <b>⬆︎</b> at the bottom of Safari.</li><li>Choose <b>Add to Home Screen</b>.</li><li>Tap <b>Add</b>. Done!</li></ol>
+    <ol id="ios-steps"><li>Tap the share icon <b>⬆︎</b> at the bottom of Safari.</li><li>Choose <b>Add to Home Screen</b>.</li><li>Tap <b>Add</b>. Done!</li></ol>
+    <ol id="other-steps" hidden><li>Open the browser menu <b>⋮</b> (top right).</li><li>Choose <b>Install app</b> or <b>Add to Home screen</b>.</li><li>Confirm. Done!</li></ol>
     <button class="btn" type="button" id="ios-close">OK</button>
   </div>
 </div>
@@ -972,7 +973,8 @@ document.addEventListener("click", e => document.querySelectorAll("nav.tabs .dd[
   if (standalone) return;
   addEventListener("beforeinstallprompt", e => { e.preventDefault(); prompt = e; btn.hidden = false });
   addEventListener("appinstalled", () => { btn.hidden = true });
-  if (ios && location.protocol === "https:") btn.hidden = false;
+  if (location.protocol === "https:") btn.hidden = false;      // always offer it; one tap where the browser allows, otherwise steps
+  document.getElementById("ios-steps").hidden = !ios; document.getElementById("other-steps").hidden = ios;
   btn.onclick = async () => {
     if (prompt) { prompt.prompt(); const r = await prompt.userChoice; if (r.outcome === "accepted") btn.hidden = true; prompt = null }
     else { help.hidden = false; sketchAll() }
