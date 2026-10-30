@@ -216,6 +216,9 @@ body { background-image: none; background-color: transparent }
 .map text.water { fill: var(--blue); font-style: italic }
 .map text.soft { fill: var(--text); opacity: .7 }
 .map .pin path { fill: var(--ink); stroke: var(--paper); stroke-width: 1.5 }
+.map .hq rect, .map .hq path { fill: var(--ink); stroke: var(--paper); stroke-width: 1.5; stroke-linejoin: round }
+.map .hq .chip { fill: var(--ink); stroke: none }
+.map .hq text { font: 500 13px var(--mono); fill: #fff; stroke: none; letter-spacing: .08em }
 .map .pin.todo path { fill: var(--paper); stroke: var(--ink); stroke-width: 1.3; stroke-dasharray: 2 2 }
 .map .pin text { font-size: 11px; font-weight: 500; fill: var(--text); text-transform: none; letter-spacing: 0 }
 .bigmap { position: relative; aspect-ratio: 1; width: min(100%, 720px); overflow: hidden }
@@ -448,8 +451,8 @@ const MENU = [
 // ---- Locations (edit here) ----
 // [name, what happens there, address, latitude, longitude]
 const PLACES = [
-  ["Aula", "Talks and final presentations", "Plateaustraat 22, 9000 Gent", 51.0471, 3.7237],
-  ["Studio", "Group work all week", "", 51.0466, 3.7272],
+  ["Plateau", "Aula for talks and final presentations", "Plateaustraat 22, 9000 Gent", 51.0471, 3.7237, "main"],
+  ["Studio", "Group work all week", "", 51.0492, 3.7305],
   ["Common kitchen", "Lunch and dinners", "", 51.0500, 3.7190],
   ["The site", "Site visit on Monday", "", 51.0420, 3.7160],
 ];
@@ -730,8 +733,7 @@ const GEO = {
 };
 const LANDMARKS = [
   ["Gravensteen", 51.0573, 3.7207, "castle"], ["Sint-Niklaaskerk", 51.0544, 3.7216, "tower"], ["Belfort", 51.0537, 3.7249, "tower"],
-  ["Sint-Baafs", 51.0530, 3.7270, "tower"], ["Boekentoren", 51.0446, 3.7253, "tower"], ["Plateau", 51.0471, 3.7237, "uni"],
-  ["UFO", 51.0468, 3.7280, "ufo"], ["Gent-Sint-Pieters", 51.0357, 3.7108, "station"], ["Citadelpark", 51.0378, 3.7222, "label"],
+  ["Sint-Baafs", 51.0530, 3.7270, "tower"], ["Boekentoren", 51.0446, 3.7253, "tower"], ["UFO", 51.0468, 3.7280, "ufo"], ["Gent-Sint-Pieters", 51.0357, 3.7108, "station"], ["Citadelpark", 51.0378, 3.7222, "label"],
   ["Coupure", 51.0545, 3.7078, "water"], ["Leie", 51.0420, 3.7090, "water"], ["Schelde", 51.0430, 3.7385, "water"],
   ["Vrijdagmarkt", 51.0570, 3.7263, "square"], ["Korenmarkt", 51.0547, 3.7212, "square"], ["Bijloke", 51.0470, 3.7122, "label"],
 ];
@@ -767,6 +769,7 @@ function mapSVG() {
   const marks = LANDMARKS.map(([n, la, lo, t]) => { const [x, y] = P([la, lo]);
     return `${icon(t, x, y)}<text class="${t === "water" ? "water" : t === "label" ? "soft" : ""}" x="${x + (t === "water" || t === "label" ? 0 : 12)}" y="${y + 4}">${n}</text>` }).join("");
   const pins = PLACES.map(p => { const [x, y] = P([p[3], p[4]]);
+    if (p[5] === "main") return `<g class="hq"><rect x="${x - 13}" y="${y - 10}" width="26" height="20"/><path d="M ${x - 17} ${y - 10} L ${x} ${y - 22} L ${x + 17} ${y - 10}"/><rect class="chip" x="${x - 20 - (p[0].length * 9 + 16)}" y="${y - 11}" width="${p[0].length * 9 + 16}" height="22"/><text x="${x - 28}" y="${y + 4}" text-anchor="end">${p[0]}</text></g>`;
     return `<g class="pin${p[2] ? "" : " todo"}"><path d="M ${x} ${y} c -6 -8 -9 -11 -9 -15 a 9 9 0 1 1 18 0 c 0 4 -3 7 -9 15 Z"/><text x="${x - 12}" y="${y - 12}" text-anchor="end">${p[0]}</text></g>` }).join("");
   const line = l => smooth(l, false);
   return `<svg viewBox="0 0 600 600" aria-hidden="true">
@@ -783,7 +786,7 @@ function drawMaps() {
   document.querySelectorAll(".map").forEach(m => {
     m.innerHTML = svg;
     const el = m.querySelector("svg");
-    if (m.dataset.map === "small") { el.setAttribute("viewBox", "10 145 580 205"); el.setAttribute("preserveAspectRatio", "xMidYMid slice") }
+    if (m.dataset.map === "small") { el.setAttribute("viewBox", "10 165 580 205"); el.setAttribute("preserveAspectRatio", "xMidYMid slice") }
   });
 }
 
