@@ -403,7 +403,7 @@ nav.tabs a { font-size: clamp(12px, 1.12vw, 15px); padding: 16px clamp(5px, .6vw
     </div>
     <div class="box members">
       <ol id="members-list"></ol>
-      <a class="btn" href="#manifesto">Enter KOTCOOP! →</a>
+      <button class="btn" type="button" id="members-enter">Enter KOTCOOP! →</button>
     </div>
   </section>
 
@@ -956,6 +956,11 @@ async function renderMembers(fresh) {
   const gate = document.getElementById("gate");
   if (!store.get("kotcoop-name") && !store.get("kotcoop-skip")) gate.hidden = false;
   document.getElementById("gate-skip").onclick = () => { store.set("kotcoop-skip", "1"); gate.hidden = true };
+  // "Enter KOTCOOP!" on the members list opens the name box again, then leads into the site
+  document.getElementById("members-enter").onclick = () => {
+    gate.dataset.next = "#manifesto"; gate.hidden = false;
+    const f = document.getElementById("gate-name"); f.value = ""; f.focus(); sketchAll();
+  };
   document.getElementById("gate-form").onsubmit = async e => {
     e.preventDefault();
     const name = document.getElementById("gate-name").value.trim().replace(/\s+/g, " ");
@@ -965,7 +970,7 @@ async function renderMembers(fresh) {
     store.set("kotcoop-local", JSON.stringify(mine));
     if (MEMBERS.formUrl) try { await fetch(MEMBERS.formUrl, { method: "POST", mode: "no-cors", body: new URLSearchParams({ [MEMBERS.field]: name }) }) } catch (e) {}
     gate.hidden = true;
-    location.hash = "#members";
+    location.hash = gate.dataset.next || "#members"; delete gate.dataset.next;
     renderMembers(name);
   };
   if (!gate.hidden) sketchAll();
