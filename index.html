@@ -219,6 +219,16 @@ body { background-image: none; background-color: transparent }
 .map .pin path { fill: var(--ink); stroke: var(--paper); stroke-width: 1.5 }
 .map .hq rect, .map .hq path { fill: var(--ink); stroke: var(--paper); stroke-width: 1.5; stroke-linejoin: round }
 .map .hq .chip { fill: var(--ink); stroke: none }
+/* motion: title letters drop in, "!" wiggles, circles tilt, Plateau pulses */
+h1 .ch { display: inline-block; animation: drop .6s cubic-bezier(.3,1.6,.5,1) both; animation-delay: calc(var(--i) * 60ms) }
+h1 .ch.bang { transform-origin: 50% 90%; animation: drop .6s cubic-bezier(.3,1.6,.5,1) both, wiggle 3.5s ease-in-out 1.2s infinite; animation-delay: calc(var(--i) * 60ms), 1.2s }
+@keyframes drop { from { opacity: 0; transform: translateY(-.6em) rotate(-8deg) } }
+@keyframes wiggle { 0%, 80%, 100% { transform: rotate(0) } 84% { transform: rotate(14deg) } 88% { transform: rotate(-10deg) } 92% { transform: rotate(6deg) } 96% { transform: rotate(-3deg) } }
+.stop.in .dot:hover { transform: scale(1.07) rotate(-4deg) }
+.stop.in:nth-child(even) .dot:hover { transform: scale(1.07) rotate(4deg) }
+.map .hq .pulse { fill: none; stroke: var(--ink); stroke-width: 2; transform-box: fill-box; transform-origin: center; animation: pulse 2.2s ease-out infinite }
+@keyframes pulse { from { transform: scale(.4); opacity: .8 } to { transform: scale(2.4); opacity: 0 } }
+@media (prefers-reduced-motion: reduce) { h1 .ch, h1 .ch.bang, .map .hq .pulse { animation: none } }
 .map .hq text { font: 500 13px var(--mono); fill: #fff; stroke: none; letter-spacing: .08em }
 .map .pin.todo path { fill: var(--paper); stroke: var(--ink); stroke-width: 1.3; stroke-dasharray: 2 2 }
 .map .pin text { font-size: 11px; font-weight: 500; fill: var(--text); text-transform: none; letter-spacing: 0 }
@@ -516,6 +526,25 @@ const WIKI = [
       <li><b>La Borda</b>, Barcelona: a resident-built cooperative on public land with long-term leasehold.</li>
       <li><b>Community Land Trust Gent</b>: separates land from building to keep homes affordable in Ghent.</li>
     </ul>` },
+  { id: "gov", title: "Governance", html: `
+    <h3>How a cooperative governs itself</h3>
+    <p>A cooperative is owned by its members, so it is also run by them. The basic rule is <b>one member, one vote</b>, no matter how many shares you hold.</p>
+    <h3>The bodies</h3>
+    <ul>
+      <li><b>General assembly</b>: all members together. It approves the budget, elects the board, changes the statutes and takes the big decisions.</li>
+      <li><b>Board</b>: a small group elected by the assembly that runs daily business and reports back.</li>
+      <li><b>Working groups</b>: open teams for concrete tasks such as maintenance, finance, events or new members.</li>
+      <li><b>House meetings</b>: residents of one building or cluster decide on their own shared spaces.</li>
+    </ul>
+    <h3>Ways of deciding</h3>
+    <ul>
+      <li><b>Majority vote</b>: quick and clear, but a minority can be overruled.</li>
+      <li><b>Consensus</b>: everyone agrees. Strong support, but slow in large groups.</li>
+      <li><b>Consent (sociocracy)</b>: a proposal passes when nobody has a reasoned objection. "Good enough for now, safe enough to try."</li>
+    </ul>
+    <h3>For students</h3>
+    <p>Students stay a few years, so knowledge leaves quickly. Student co-ops like the Edinburgh Student Housing Co-operative solve this with short handover periods, written procedures and rotating roles, so every resident learns to run the house.</p>
+    <p><span class="mark">Aanvullen met ons eigen model (zie Governance-pagina).</span></p>` },
   { id: "site", title: "The site", html: `
     <h3>The site</h3>
     <p><span class="mark">Locatie, kaart, foto's, randvoorwaarden.</span></p>` },
@@ -598,7 +627,7 @@ let currentWiki = WIKI[0].id;
 function renderWiki() {
   document.getElementById("wiki-nav").innerHTML = WIKI.map(w =>
     `<button type="button" id="wiki-${w.id}" aria-current="${w.id === currentWiki}" data-id="${w.id}">${w.title}</button>`).join("");
-  document.querySelectorAll("#wiki-nav button").forEach(b => b.onclick = () => { currentWiki = b.dataset.id; renderWiki() });
+  document.querySelectorAll("#wiki-nav button").forEach(b => b.onclick = () => { currentWiki = b.dataset.id; renderWiki(); sketchAll() });
   document.getElementById("wiki-page").innerHTML = WIKI.find(w => w.id === currentWiki).html;
 }
 
@@ -736,8 +765,9 @@ function measureWords() {
   hls = [...document.querySelectorAll(".manifesto .hl")].map(h => { const ws = h.querySelectorAll(".w"); return [h, ws[ws.length - 1]] });
 }
 function inkWords() {
-  const line = Math.max(scrollY + innerHeight * .72, innerHeight * .95);
-  for (const [w, y] of words) w.classList.toggle("on", y < line);
+  const line = Math.max(scrollY + innerHeight * .8, innerHeight * .95);
+  const atEnd = scrollY + innerHeight >= document.documentElement.scrollHeight - 4;
+  for (const [w, y] of words) w.classList.toggle("on", atEnd || y < line);
   for (const [h, last] of hls) h.classList.toggle("on", !!last && last.classList.contains("on"));
 }
 addEventListener("scroll", inkWords, { passive: true });
@@ -803,7 +833,7 @@ function mapSVG() {
   const marks = LANDMARKS.map(([n, la, lo, t]) => { const [x, y] = P([la, lo]);
     return `${icon(t, x, y)}<text class="${t === "water" ? "water" : t === "label" ? "soft" : ""}" x="${x + (t === "water" || t === "label" ? 0 : 12)}" y="${y + 4}">${n}</text>` }).join("");
   const pins = PLACES.map(p => { const [x, y] = P([p[3], p[4]]);
-    if (p[5] === "main") return `<g class="hq"><rect x="${x - 13}" y="${y - 10}" width="26" height="20"/><path d="M ${x - 17} ${y - 10} L ${x} ${y - 22} L ${x + 17} ${y - 10}"/><rect class="chip" x="${x - 20 - (p[0].length * 9 + 16)}" y="${y - 11}" width="${p[0].length * 9 + 16}" height="22"/><text x="${x - 28}" y="${y + 4}" text-anchor="end">${p[0]}</text></g>`;
+    if (p[5] === "main") return `<g class="hq"><circle class="pulse" cx="${x}" cy="${y - 6}" r="22"/><rect x="${x - 13}" y="${y - 10}" width="26" height="20"/><path d="M ${x - 17} ${y - 10} L ${x} ${y - 22} L ${x + 17} ${y - 10}"/><rect class="chip" x="${x - 20 - (p[0].length * 9 + 16)}" y="${y - 11}" width="${p[0].length * 9 + 16}" height="22"/><text x="${x - 28}" y="${y + 4}" text-anchor="end">${p[0]}</text></g>`;
     return `<g class="pin${p[2] ? "" : " todo"}"><path d="M ${x} ${y} c -6 -8 -9 -11 -9 -15 a 9 9 0 1 1 18 0 c 0 4 -3 7 -9 15 Z"/><text x="${x - 12}" y="${y - 12}" text-anchor="end">${p[0]}</text></g>` }).join("");
   const line = l => smooth(l, false);
   return `<svg viewBox="0 0 600 600" aria-hidden="true">
@@ -858,6 +888,30 @@ document.fonts && document.fonts.ready.then(redraw);
 
 if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
 drawMaps(); renderAgenda(); renderWiki(); route(); redraw();
+
+// ---- Motion: title letters, and "boiling" hand-drawn circles (redrawn a few times a second like animation) ----
+(function () {
+  const h1 = document.querySelector("#v-manifesto h1"), t = h1.textContent;
+  h1.setAttribute("aria-label", t);
+  h1.innerHTML = [...t].map((c, i) => `<span class="ch${c === "!" ? " bang" : ""}" style="--i:${i}" aria-hidden="true">${c}</span>`).join("");
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  let frame = 0;
+  setInterval(() => {
+    if (document.hidden) return;
+    frame = (frame + 1) % 3;
+    document.querySelectorAll(".dot").forEach((el, i) => {
+      const p = el.querySelector(".ring path"); if (!p || !el.offsetParent) return;
+      const fast = el.matches(":hover");
+      if (!fast && frame === 1 && i % 2) return;           // calm when idle, livelier under the mouse
+      p.setAttribute("d", wobblyCircle(el.offsetWidth, rng(i * 31 + 7 + frame * 1009)));
+    });
+    document.querySelectorAll(SK).forEach((el, i) => {
+      if (!el.matches(":hover")) return;                    // boxes only boil while you point at them
+      const p = el.querySelector(":scope > .sk path"); if (!p) return;
+      p.setAttribute("d", wobblyRect(el.clientWidth, el.clientHeight, rng(i * 97 + 13 + frame * 1009)));
+    });
+  }, 220);
+})();
 setInterval(renderAgenda, 60000);
 </script>
 
