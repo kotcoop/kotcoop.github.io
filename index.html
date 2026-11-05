@@ -162,6 +162,13 @@ h3 { font-size: 17px; font-weight: 500; line-height: 1.2 }
 .wiki .notes li span { font-size: 12px; opacity: .8 }
 .wiki .notes li.new { animation: drop .5s cubic-bezier(.3,1.6,.5,1) both }
 .wedit { display: grid; gap: 8px; max-width: 68ch }
+.wedit label { display: grid; gap: 4px; font: 500 11px var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--blue) }
+.wedit .t { font: 400 18px/1.2 var(--display); text-transform: uppercase }
+.addpart { display: grid; gap: 10px; padding-top: 10px; border-top: 1px dashed var(--grid) }
+.addpart > .btn { justify-self: start }
+.wpart.added h3, .wpart .by { color: var(--blue) }
+.wpart .by { margin: 0; font-size: 12px }
+.wpart.new { animation: drop .5s cubic-bezier(.3,1.6,.5,1) both }
 .wedit[hidden] { display: none }
 .wedit textarea, .wedit input { font: 14px/1.5 var(--mono); color: var(--text); background: var(--paper); border: 1.5px solid var(--blue); padding: 8px 10px; border-radius: 0; resize: vertical }
 .wedit textarea:focus, .wedit input:focus { outline: 2px solid var(--blue); outline-offset: 1px }
@@ -784,43 +791,76 @@ async function loadWikiNotes() {
   return notes;
 }
 function noteHTML(n) { return `<li><p>${esc(n.text).replace(/\n/g, "<br>")}</p><span>${n.name ? "— " + esc(n.name) : ""}</span></li>` }
+const slug = t => t.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+// Everything people do is stored as a row: an addition (section = part), a new title ("title:" + part) or a new part ("new:" + page).
+async function sendWiki(row) {
+  const mine = JSON.parse(ls("kotcoop-wiki-local") || "[]"); mine.push(row); ls("kotcoop-wiki-local", JSON.stringify(mine));
+  if (WIKINOTES.formUrl) try { await fetch(WIKINOTES.formUrl, { method: "POST", mode: "no-cors", body: new URLSearchParams({ [WIKINOTES.section]: row.sec, [WIKINOTES.text]: row.text, [WIKINOTES.name]: row.name }) }) } catch (e) {}
+}
+const PEN = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1-5L16 4l4 4L9 19z M14 6l4 4"/></svg>';
+function setupPart(part, sec) {
+  const h = part.querySelector("h3");
+  part.dataset.sec = sec;
+  const pen = document.createElement("button");
+  pen.type = "button"; pen.className = "pencil"; pen.title = "Edit this part"; pen.setAttribute("aria-label", "Edit this part"); pen.innerHTML = PEN;
+  (h || part).prepend(pen);
+  part.insertAdjacentHTML("beforeend", `<ul class="notes"></ul>
+    <form class="wedit" hidden>${h ? '<label>Title<input class="t" maxlength="80"></label>' : ""}
+    <label>Add text<textarea rows="3" placeholder="Type your addition…"></textarea></label>
+    <div class="row2"><input class="n" placeholder="name" maxlength="40"><button class="btn" type="submit">Save</button><button class="btn alt" type="button" data-cancel>Cancel</button></div></form>`);
+  const form = part.querySelector(".wedit"), title = form.querySelector(".t");
+  const headingText = () => h ? [...h.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent).join("").trim() : "";
+  pen.onclick = () => { form.hidden = !form.hidden; if (!form.hidden) { form.querySelector(".n").value = ls("kotcoop-name") || ""; if (title) title.value = headingText(); form.querySelector("textarea").focus() } sketchAll() };
+  form.querySelector("[data-cancel]").onclick = () => { form.hidden = true; sketchAll() };
+  form.onsubmit = async e => {
+    e.preventDefault();
+    const text = form.querySelector("textarea").value.trim(), name = form.querySelector(".n").value.trim();
+    const newTitle = title ? title.value.trim().replace(/\s+/g, " ") : "";
+    if (newTitle && newTitle !== headingText()) { setHeading(h, newTitle); await sendWiki({ sec: "title:" + sec, text: newTitle, name }) }
+    if (text) { const n = { sec, text, name }; part.querySelector(".notes").insertAdjacentHTML("beforeend", noteHTML(n).replace("<li>", '<li class="new">')); await sendWiki(n) }
+    form.reset(); form.hidden = true; sketchAll();
+  };
+}
+function setHeading(h, t) { [...h.childNodes].filter(n => n.nodeType === 3).forEach(n => n.remove()); h.append(t) }
+function newPart(page, pageId, t, body, name) {
+  const part = document.createElement("section"); part.className = "wpart added";
+  part.innerHTML = `<h3>${esc(t)}</h3>${body ? `<p>${esc(body).replace(/\n/g, "<br>")}</p>` : ""}${name ? `<p class="by">— ${esc(name)}</p>` : ""}`;
+  page.insertBefore(part, page.querySelector(".addpart"));
+  setupPart(part, pageId + "/" + slug(t));
+  return part;
+}
 async function decorateWiki() {
   const page = document.getElementById("wiki-page"), id = currentWiki;
-  // group every heading with what follows it into one part
+  // group every heading with what follows it into one part, named after its original heading (so renaming keeps its notes)
   const parts = []; let cur = null;
   [...page.children].forEach(el => { if (el.tagName === "H3" || !cur) { cur = document.createElement("section"); cur.className = "wpart"; parts.push(cur) } cur.appendChild(el) });
   page.replaceChildren(...parts);
-  parts.forEach((part, i) => {
-    const h = part.querySelector("h3");      // a part is named after its heading, so adding parts later doesn't mix up notes
-    const sec = id + "/" + (h ? h.textContent.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") : i);
-    part.dataset.sec = sec;
-    const pen = document.createElement("button");
-    pen.type = "button"; pen.className = "pencil"; pen.title = "Add to this part"; pen.setAttribute("aria-label", "Add to this part");
-    pen.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1-5L16 4l4 4L9 19z M14 6l4 4"/></svg>';
-    (h || part).prepend(pen);
-    part.insertAdjacentHTML("beforeend", `<ul class="notes"></ul>
-      <form class="wedit" hidden><textarea rows="3" required placeholder="Type your addition…"></textarea>
-      <div class="row2"><input placeholder="name" maxlength="40"><button class="btn" type="submit">Add</button><button class="btn alt" type="button" data-cancel>Cancel</button></div></form>`);
-    const form = part.querySelector(".wedit");
-    pen.onclick = () => { form.hidden = !form.hidden; if (!form.hidden) { form.querySelector("input").value = ls("kotcoop-name") || ""; form.querySelector("textarea").focus() } sketchAll() };
-    form.querySelector("[data-cancel]").onclick = () => { form.hidden = true; sketchAll() };
-    form.onsubmit = async e => {
-      e.preventDefault();
-      const text = form.querySelector("textarea").value.trim(), name = form.querySelector("input").value.trim();
-      if (!text) return;
-      const n = { sec, text, name };
-      const mine = JSON.parse(ls("kotcoop-wiki-local") || "[]"); mine.push(n); ls("kotcoop-wiki-local", JSON.stringify(mine));
-      if (WIKINOTES.formUrl) try { await fetch(WIKINOTES.formUrl, { method: "POST", mode: "no-cors", body: new URLSearchParams({ [WIKINOTES.section]: sec, [WIKINOTES.text]: text, [WIKINOTES.name]: name }) }) } catch (e) {}
-      part.querySelector(".notes").insertAdjacentHTML("beforeend", noteHTML(n).replace("<li>", '<li class="new">'));
-      form.reset(); form.hidden = true; sketchAll();
-    };
-  });
+  parts.forEach((part, i) => { const h = part.querySelector("h3"); setupPart(part, id + "/" + (h ? slug(h.textContent) : i)) });
+  // "+ New part" at the bottom of every page
+  page.insertAdjacentHTML("beforeend", `<div class="addpart"><button class="btn alt" type="button">+ New part</button>
+    <form class="wedit" hidden><label>Title<input class="t" required maxlength="80"></label><label>Text<textarea rows="4" placeholder="What is this part about?"></textarea></label>
+    <div class="row2"><input class="n" placeholder="name" maxlength="40"><button class="btn" type="submit">Add part</button><button class="btn alt" type="button" data-cancel>Cancel</button></div></form></div>`);
+  const add = page.querySelector(".addpart"), aform = add.querySelector("form");
+  add.querySelector("button").onclick = () => { aform.hidden = !aform.hidden; aform.querySelector(".n").value = ls("kotcoop-name") || ""; aform.querySelector(".t").focus(); sketchAll() };
+  aform.querySelector("[data-cancel]").onclick = () => { aform.hidden = true; sketchAll() };
+  aform.onsubmit = async e => {
+    e.preventDefault();
+    const t = aform.querySelector(".t").value.trim().replace(/\s+/g, " "), body = aform.querySelector("textarea").value.trim(), name = aform.querySelector(".n").value.trim();
+    if (!t) return;
+    newPart(page, id, t, body, name).classList.add("new");
+    await sendWiki({ sec: "new:" + id, text: t + (body ? "\n\n" + body : ""), name });
+    aform.reset(); aform.hidden = true; sketchAll();
+  };
   wikiNotes = await loadWikiNotes();
   if (currentWiki !== id) return;
-  parts.forEach(part => { part.querySelector(".notes").innerHTML = wikiNotes.filter(n => n.sec === part.dataset.sec).map(noteHTML).join("") });
+  // replay what people did, oldest first: new parts, then renamed titles, then additions
+  const byKey = () => Object.fromEntries([...page.querySelectorAll(".wpart")].map(p => [p.dataset.sec, p]));
+  for (const n of wikiNotes) if (n.sec === "new:" + id) { const [t, ...rest] = n.text.split("\n"); if (!byKey()[id + "/" + slug(t)]) newPart(page, id, t.trim(), rest.join("\n").trim(), n.name) }
+  const map = byKey();
+  for (const n of wikiNotes) if (n.sec.startsWith("title:") && map[n.sec.slice(6)]) { const h = map[n.sec.slice(6)].querySelector("h3"); if (h) setHeading(h, n.text) }
+  for (const [k, part] of Object.entries(map)) part.querySelector(".notes").innerHTML = wikiNotes.filter(n => n.sec === k).map(noteHTML).join("");
   sketchAll();
 }
-
 
 // ---- Red thread: one line from the top of the page, weaving behind the boxes, through every circle ----
 function drawThread() {
