@@ -308,6 +308,9 @@ body.editing .ed:focus { outline: 2px solid var(--blue); background: color-mix(i
 body.editing .manifesto .w { opacity: 1 !important }
 #toast { position: fixed; left: 50%; bottom: 24px; translate: -50% 20px; z-index: 60; background: var(--blue); color: #fff; font: 500 12px var(--mono); text-transform: uppercase; letter-spacing: .06em; padding: 10px 14px; opacity: 0; transition: opacity .2s, translate .2s; pointer-events: none }
 #toast.on { opacity: 1; translate: -50% 0 }
+.detail .sched { margin-top: 10px; grid-column: 1 / -1 }
+.wedit select { font: 14px var(--mono); border: 1.5px solid var(--blue); background: var(--paper); color: var(--text); padding: 8px; border-radius: 0 }
+.wedit .row2 label { flex: 1 1 110px }
 /* entry gate + member list */
 .gate { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px; background: color-mix(in srgb, var(--paper) 92%, transparent) }
 .gate[hidden] { display: none }
@@ -806,10 +809,42 @@ function renderAgenda() {
   renderDetail();
 }
 function renderDetail() {
-  const d = DAYS[selected[0]], e = d.events[selected[1]];
-  document.getElementById("detail").innerHTML =
+  const d = DAYS[selected[0]], e = d.events[selected[1]], box = document.getElementById("detail");
+  if (!e) { box.innerHTML = `<span class="sub">${d.long}</span><p>No events yet.</p>${schedTools()}`; wireSched(); return }
+  box.innerHTML =
     `<span class="sub">${d.long} ${d.date.slice(8)}.03<br>${e[0]}–${e[1]}</span>
-     <div style="display:grid;gap:6px"><h3>${e[2]}</h3><p>${TYPE[e[3]]}${e[4] ? " · " + e[4] : ""}${e[5] ? " · " + e[5] : ""}</p><p><span class="mark">Placeholder: beschrijving volgt</span></p></div>`;
+     <div style="display:grid;gap:6px"><h3>${esc(e[2])}</h3><p>${TYPE[e[3]]}${e[4] ? " · " + esc(e[4]) : ""}${e[5] ? " · " + esc(e[5]) : ""}</p><p>${e[6] ? esc(e[6]) : '<span class="mark">Placeholder: beschrijving volgt</span>'}</p></div>
+     <form class="wedit sched" autocomplete="off">
+       <label>Title<input name="t" value="${esc(e[2])}"></label>
+       <div class="row2"><label>From<input name="a" type="time" step="900" value="${e[0]}"></label><label>To<input name="b" type="time" step="900" value="${e[1]}"></label>
+         <label>Type<select name="y">${Object.entries(TYPE).map(([k, v]) => `<option value="${k}"${k === e[3] ? " selected" : ""}>${v}</option>`).join("")}</select></label></div>
+       <label>Place<input name="p" value="${esc(e[4] || "")}"></label>
+       <label>People<input name="w" value="${esc(e[5] || "")}"></label>
+       <label>Description<textarea name="x" rows="3">${esc(e[6] || "")}</textarea></label>
+       <div class="row2"><button class="btn" type="submit">Save event</button><button class="btn alt" type="button" data-del>Delete</button><button class="btn alt" type="button" data-add>+ New event on ${d.long}</button></div>
+     </form>`;
+  wireSched();
+}
+function schedTools() { return `<form class="wedit sched"><div class="row2"><button class="btn alt" type="button" data-add>+ New event</button></div></form>` }
+// member mode: change the programme; the whole programme is saved as one row ("data:days"), the latest wins
+function wireSched() {
+  const f = document.querySelector("#detail form.sched"); if (!f) return;
+  const save = async () => { renderAgenda(); toast("saving…"); await sendWiki({ sec: "data:days", text: JSON.stringify(DAYS.map(d => d.events)), name: ls("kotcoop-name") || "" }); toast("saved ✓") };
+  const ev = () => DAYS[selected[0]].events;
+  f.onsubmit = e => {
+    e.preventDefault(); const v = Object.fromEntries(new FormData(f));
+    ev()[selected[1]] = [v.a, v.b, v.t.trim() || "Event", v.y, v.p.trim(), v.w.trim(), v.x.trim()];
+    ev().sort((x, y) => x[0].localeCompare(y[0])); selected[1] = ev().findIndex(x => x[2] === (v.t.trim() || "Event") && x[0] === v.a); save();
+  };
+  f.querySelector("[data-del]")?.addEventListener("click", () => { ev().splice(selected[1], 1); selected[1] = 0; save() });
+  f.querySelector("[data-add]").onclick = () => {
+    const last = ev()[ev().length - 1], a = last ? last[1] : "09:00", b = String(Math.min(23, +a.slice(0, 2) + 1)).padStart(2, "0") + a.slice(2);
+    ev().push([a, b, "New event", "talk", "", "", ""]); selected[1] = ev().length - 1; save();
+  };
+}
+function applySchedule(notes) {
+  const last = notes.filter(n => n.sec === "data:days").pop(); if (!last) return;
+  try { const evs = JSON.parse(last.text); if (Array.isArray(evs) && evs.length === DAYS.length) { DAYS.forEach((d, i) => d.events = evs[i]); selected = [Math.min(selected[0], DAYS.length - 1), 0]; renderAgenda() } } catch (e) {}
 }
 function scrollAgendaTo9() {
   const s = document.getElementById("agenda-scroll");
@@ -853,12 +888,15 @@ function parseCSV(t) {               // handles quotes, commas and line breaks i
   return rows;
 }
 let wikiNotes = null;
+// Google's published Sheet first; if that fails, the copy GitHub saves into the site every hour (data/*.csv); then the last one this device saw
+async function fetchCSV(url, backup, key) {
+  for (const u of [url + "&t=" + Date.now(), backup]) try { const r = await fetch(u, { cache: "no-store" }); if (!r.ok) throw 0; const t = await r.text(); ls(key, t); return t } catch (e) {}
+  return ls(key) || "";
+}
 async function loadWikiNotes() {
   let notes = [];
   if (WIKINOTES.csvUrl) {
-    let csv;
-    try { const r = await fetch(WIKINOTES.csvUrl + "&t=" + Date.now(), { cache: "no-store" }); if (!r.ok) throw 0; csv = await r.text(); ls("kotcoop-wiki-csv", csv) }
-    catch (e) { csv = ls("kotcoop-wiki-csv") || "" }
+    const csv = await fetchCSV(WIKINOTES.csvUrl, "data/wiki.csv", "kotcoop-wiki-csv");
     // columns as the form makes them: timestamp, section, text, name
     notes = parseCSV(csv).slice(1).filter(r => r[1] && r[2]).map(r => ({ sec: r[1].trim(), text: r[2].trim(), name: (r[3] || "").trim(), when: r[0] }));
   }
@@ -1035,8 +1073,15 @@ function editables() {
   document.querySelectorAll("#v-manifesto .manifesto .reveal").forEach((el, i) => out.push([el, "manifesto#" + i]));
   document.querySelectorAll(".view .titlebox .box > h2, .view .titlebox .box > .sub").forEach(el => out.push([el, el.closest(".view").id + "#" + el.tagName.toLowerCase()]));
   document.querySelectorAll(".box.rows > .row[data-sec] > div > p:first-child").forEach(el => out.push([el, el.closest(".row").dataset.sec + "#text"]));
+  ["menu", "places"].forEach(id => document.querySelectorAll(`#${id} > .row`).forEach((row, i) => row.querySelectorAll(".k, p").forEach((el, j) => out.push([el, id + "#" + i + "." + j]))));
   document.querySelectorAll("#wiki-page .wpart").forEach(part =>
     part.querySelectorAll(":scope > p:not(.by), :scope > ul:not(.notes) > li, :scope > dl > dt, :scope > dl > dd").forEach((el, j) => out.push([el, part.dataset.sec + "#" + j])));
+  // everything else on the pages: any heading, paragraph or list item, numbered per page
+  const seen = new Set(out.map(([el]) => el)), skip = "#wiki-page, .manifesto, .notes, .wedit, .addpart, .scheme-tools, #detail, #agenda, .added, .by, a, button, .k, .mtitle, #members-list";
+  document.querySelectorAll("main .view").forEach(view => {
+    let i = 0;
+    view.querySelectorAll("h2, h3, p, li, .sub, dt, dd").forEach(el => { if (seen.has(el) || el.closest(skip) || el.querySelector("h2, h3, p, li, button, input")) return; out.push([el, view.id + "~" + i++]) });
+  });
   return out;
 }
 function clean(html) {               // keep only simple markup: bold, italic, line breaks, highlights and placeholders
@@ -1059,17 +1104,33 @@ function applyTexts(notes) {
   for (const [el, key] of editables()) if (key in last && document.activeElement !== el) {
     el.innerHTML = clean(last[key]);
     if (el.matches(".manifesto .reveal")) wrapWords(el);
+    relink(el);
   }
+}
+function relink(el) {                // an address in Locations stays a link to Google Maps
+  if (!el.matches("#places .row p:nth-of-type(2)") || el.querySelector("a") || !el.textContent.trim()) return;
+  const t = el.textContent.replace(/↗/g, "").trim();
+  el.innerHTML = `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(t)}" target="_blank" rel="noopener">${esc(t)} ↗</a>`;
 }
 function refreshEditables() {
   const on = document.body.classList.contains("editing");
-  for (const [el, key] of editables()) { el.contentEditable = on ? "true" : "false"; el.classList.toggle("ed", on); el.dataset.key = key; el.spellcheck = on }
+  for (const [el, key] of editables()) {
+    el.contentEditable = on ? "true" : "false"; el.classList.toggle("ed", on); el.dataset.key = key; el.spellcheck = on;
+    if (on && el.matches("#places .row p:nth-of-type(2)") && el.querySelector("a")) el.textContent = el.textContent.replace(/↗/g, "").trim();   // edit the address as plain text
+    if (!on) relink(el);
+  }
 }
-document.addEventListener("focusin", e => { const el = e.target.closest?.(".ed"); if (el) el._before = clean(el.innerHTML) });
+document.addEventListener("focusin", e => {
+  const el = e.target.closest?.(".ed"); if (!el) return;
+  el._before = clean(el.innerHTML);
+  // a blue placeholder ("in te vullen") gets selected, so typing replaces it
+  if (el.querySelector(".mark") && el.textContent.trim() === el.querySelector(".mark").textContent.trim()) requestAnimationFrame(() => { const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r) });
+});
 document.addEventListener("focusout", async e => {
   const el = e.target.closest?.(".ed"); if (!el) return;
   const now = clean(el.innerHTML); if (now === el._before) return;
   if (el.matches(".manifesto .reveal")) { el.innerHTML = now; wrapWords(el); measureWords(); inkWords() }
+  if (!document.body.classList.contains("editing")) relink(el);
   toast("saving…");
   await sendWiki({ sec: "text:" + el.dataset.key, text: now, name: ls("kotcoop-name") || "" });
   toast("saved ✓"); sketchAll();
@@ -1346,7 +1407,7 @@ document.fonts && document.fonts.ready.then(redraw);
 
 if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
 drawMaps(); renderAgenda(); renderWiki(); decorateRows(); route(); redraw();
-loadWikiNotes().then(n => { applyTexts(n); refreshEditables(); redraw() });
+loadWikiNotes().then(n => { applySchedule(n); applyTexts(n); refreshEditables(); redraw() });
 
 // menu dropdowns: only one open at a time, close when clicking elsewhere
 document.addEventListener("click", e => document.querySelectorAll("nav.tabs .dd[open]").forEach(dd => { if (!dd.contains(e.target)) dd.open = false }));
@@ -1392,9 +1453,7 @@ async function loadMembers() {
   let names = [];
   if (MEMBERS.csvUrl) try {
     // fresh copy each time (Google's own copies can lag); fall back to the last list we saw if it fails
-    let csv;
-    try { const r = await fetch(MEMBERS.csvUrl + "&t=" + Date.now(), { cache: "no-store" }); if (!r.ok) throw 0; csv = await r.text(); store.set("kotcoop-csv", csv) }
-    catch (e) { csv = store.get("kotcoop-csv") || "" }
+    const csv = await fetchCSV(MEMBERS.csvUrl, "data/members.csv", "kotcoop-csv");
     names = csv.trim().split(/\r?\n/).slice(1).map(l => (l.match(/^(?:"[^"]*"|[^,]*),("(?:[^"]|"")*"|[^,]*)/) || [])[1] || "")
       .map(n => n.replace(/^"|"$/g, "").replace(/""/g, '"').trim()).filter(Boolean);
   } catch (e) {}

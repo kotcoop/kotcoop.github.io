@@ -1,0 +1,25 @@
+# Every hour, copy the members list and all member-mode edits from the Google Sheets into the site itself (data/*.csv),
+# so they are kept in the code even if the Sheets disappear. Run it by hand under Actions → Save edits → Run workflow.
+name: Save edits
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  save:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download the Sheets
+        run: |
+          mkdir -p data
+          curl -fsSL "https://docs.google.com/spreadsheets/d/e/2PACX-1vSRkLST_TXsk5t7tS2po2vRnb-DhBQiKyrZnBsw6b37XxoZdDAsOZq-RoaaSX1q5WXV-bCB6C-oHwuv/pub?output=csv" -o data/members.csv
+          curl -fsSL "https://docs.google.com/spreadsheets/d/e/2PACX-1vRjEOG5xghHctEeTsV4A56c0TKtakA3quH2hp4IxbbesQWP1s_Jb9EyMUJzKFFbebyzZ7z9IKlHaVeM/pub?output=csv" -o data/wiki.csv
+      - name: Save them in the site
+        run: |
+          git config user.name "kotcoop-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data
+          git diff --cached --quiet || (git commit -m "Save edits from the Sheets" && git push)
