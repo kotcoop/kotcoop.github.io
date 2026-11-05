@@ -147,6 +147,26 @@ h3 { font-size: 17px; font-weight: 500; line-height: 1.2 }
 .wiki aside button[aria-current="true"] { background: var(--ink); color: var(--paper) }
 .wiki aside button:focus-visible { outline: 2px solid var(--blue); outline-offset: -2px }
 .wiki article { padding: 22px; display: grid; gap: 14px; align-content: start }
+.wiki .wpart { display: grid; gap: 14px }
+.wiki .wpart + .wpart { padding-top: 6px }
+.wiki h3 { display: flex; align-items: center; gap: 10px }
+.pencil { all: unset; cursor: pointer; order: 2; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; color: var(--ink); flex: none; transition: background .15s, color .15s, transform .2s }
+.wpart > .pencil { justify-self: end }
+.pencil svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; stroke-linecap: round }
+.pencil:hover { background: var(--ink); color: #fff; transform: rotate(-12deg) }
+.pencil:active, .pencil:focus-visible { background: var(--blue); color: #fff; outline: none }
+.wiki .notes { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; max-width: 68ch }
+.wiki .notes:empty { display: none }
+.wiki .notes li { border-left: 3px solid var(--blue); padding: 4px 0 4px 12px; color: var(--blue) }
+.wiki .notes li p { margin: 0 }
+.wiki .notes li span { font-size: 12px; opacity: .8 }
+.wiki .notes li.new { animation: drop .5s cubic-bezier(.3,1.6,.5,1) both }
+.wedit { display: grid; gap: 8px; max-width: 68ch }
+.wedit[hidden] { display: none }
+.wedit textarea, .wedit input { font: 14px/1.5 var(--mono); color: var(--text); background: var(--paper); border: 1.5px solid var(--blue); padding: 8px 10px; border-radius: 0; resize: vertical }
+.wedit textarea:focus, .wedit input:focus { outline: 2px solid var(--blue); outline-offset: 1px }
+.wedit .row2 { display: flex; flex-wrap: wrap; gap: 8px }
+.wedit .row2 input { flex: 1 1 140px; min-width: 0 }
 .wiki article ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; max-width: 68ch }
 .gloss { display: grid; grid-template-columns: 170px 1fr; gap: 10px 20px; margin: 0 }
 .gloss dt { font-weight: 500; color: var(--ink) }
@@ -622,6 +642,24 @@ const WIKI = [
       <li><b>Consensus</b>: everyone agrees. Strong support, but slow in large groups.</li>
       <li><b>Consent (sociocracy)</b>: a proposal passes when nobody has a reasoned objection. "Good enough for now, safe enough to try."</li>
     </ul>
+    <h3>Participation</h3>
+    <p>A cooperative only works when members take part. Typical duties:</p>
+    <ul>
+      <li><b>Assemblies</b>: attend the general assembly, or give your vote to someone else (proxy).</li>
+      <li><b>Working hours</b>: a few hours a month in a working group, such as cleaning, repairs, finance or welcoming new members.</li>
+      <li><b>Rotating roles</b>: everyone takes a turn as chair, note-taker or house contact.</li>
+      <li><b>Shared spaces</b>: keep kitchen, garden and common rooms in order together.</li>
+    </ul>
+    <h3>Sanctions</h3>
+    <p>Sanctions are a last step, agreed by the assembly beforehand and applied the same way to everyone. A common ladder:</p>
+    <ul>
+      <li><b>1. Reminder</b>: a friendly message from the working group or house contact.</li>
+      <li><b>2. Conversation</b>: a talk to understand why (exams, illness, a job) and agree on a plan to catch up.</li>
+      <li><b>3. Compensation</b>: make up the missed hours later, or pay a small agreed amount into the common fund.</li>
+      <li><b>4. Suspension</b>: temporary loss of a role or of the right to vote.</li>
+      <li><b>5. Exclusion</b>: only for serious or repeated cases, decided by the general assembly as the statutes describe, with the member heard first.</li>
+    </ul>
+    <p><span class="mark">Welke regels en sancties kiezen wij? Aan te vullen.</span></p>
     <h3>For students</h3>
     <p>Students stay a few years, so knowledge leaves quickly. Student co-ops like the Edinburgh Student Housing Co-operative solve this with short handover periods, written procedures and rotating roles, so every resident learns to run the house.</p>
     <p><span class="mark">Aanvullen met ons eigen model (zie Governance-pagina).</span></p>` },
@@ -710,6 +748,77 @@ function renderWiki() {
     `<button type="button" id="wiki-${w.id}" aria-current="${w.id === currentWiki}" data-id="${w.id}">${w.title}</button>`).join("");
   document.querySelectorAll("#wiki-nav button").forEach(b => b.onclick = () => { currentWiki = b.dataset.id; renderWiki(); sketchAll() });
   document.getElementById("wiki-page").innerHTML = WIKI.find(w => w.id === currentWiki).html;
+  decorateWiki();
+}
+
+// ---- Wiki: a pencil on every part, so anyone can type additions under it ----
+// Additions go to a Google Form; its Sheet (published as CSV) is read back so everyone sees them. Until that is set, they stay on this device.
+const WIKINOTES = { formUrl: "", section: "", text: "", name: "", csvUrl: "" };
+function ls(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v) } catch (e) { return null } }
+function esc(t) { return String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]) }
+function parseCSV(t) {               // handles quotes, commas and line breaks inside answers
+  const rows = []; let row = [], f = "", q = false;
+  for (let i = 0; i < t.length; i++) {
+    const c = t[i];
+    if (q) { if (c === '"') { if (t[i + 1] === '"') { f += '"'; i++ } else q = false } else f += c }
+    else if (c === '"') q = true;
+    else if (c === ",") { row.push(f); f = "" }
+    else if (c === "\n" || c === "\r") { if (c === "\r" && t[i + 1] === "\n") i++; row.push(f); rows.push(row); row = []; f = "" }
+    else f += c;
+  }
+  if (f || row.length) { row.push(f); rows.push(row) }
+  return rows;
+}
+let wikiNotes = null;
+async function loadWikiNotes() {
+  let notes = [];
+  if (WIKINOTES.csvUrl) {
+    let csv;
+    try { const r = await fetch(WIKINOTES.csvUrl + "&t=" + Date.now(), { cache: "no-store" }); if (!r.ok) throw 0; csv = await r.text(); ls("kotcoop-wiki-csv", csv) }
+    catch (e) { csv = ls("kotcoop-wiki-csv") || "" }
+    // columns as the form makes them: timestamp, section, text, name
+    notes = parseCSV(csv).slice(1).filter(r => r[1] && r[2]).map(r => ({ sec: r[1].trim(), text: r[2].trim(), name: (r[3] || "").trim(), when: r[0] }));
+  }
+  for (const n of JSON.parse(ls("kotcoop-wiki-local") || "[]"))
+    if (!notes.some(m => m.sec === n.sec && m.text === n.text)) notes.push(n);
+  return notes;
+}
+function noteHTML(n) { return `<li><p>${esc(n.text).replace(/\n/g, "<br>")}</p><span>${n.name ? "— " + esc(n.name) : ""}</span></li>` }
+async function decorateWiki() {
+  const page = document.getElementById("wiki-page"), id = currentWiki;
+  // group every heading with what follows it into one part
+  const parts = []; let cur = null;
+  [...page.children].forEach(el => { if (el.tagName === "H3" || !cur) { cur = document.createElement("section"); cur.className = "wpart"; parts.push(cur) } cur.appendChild(el) });
+  page.replaceChildren(...parts);
+  parts.forEach((part, i) => {
+    const h = part.querySelector("h3");      // a part is named after its heading, so adding parts later doesn't mix up notes
+    const sec = id + "/" + (h ? h.textContent.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") : i);
+    part.dataset.sec = sec;
+    const pen = document.createElement("button");
+    pen.type = "button"; pen.className = "pencil"; pen.title = "Add to this part"; pen.setAttribute("aria-label", "Add to this part");
+    pen.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1-5L16 4l4 4L9 19z M14 6l4 4"/></svg>';
+    (h || part).prepend(pen);
+    part.insertAdjacentHTML("beforeend", `<ul class="notes"></ul>
+      <form class="wedit" hidden><textarea rows="3" required placeholder="Type your addition…"></textarea>
+      <div class="row2"><input placeholder="name" maxlength="40"><button class="btn" type="submit">Add</button><button class="btn alt" type="button" data-cancel>Cancel</button></div></form>`);
+    const form = part.querySelector(".wedit");
+    pen.onclick = () => { form.hidden = !form.hidden; if (!form.hidden) { form.querySelector("input").value = ls("kotcoop-name") || ""; form.querySelector("textarea").focus() } sketchAll() };
+    form.querySelector("[data-cancel]").onclick = () => { form.hidden = true; sketchAll() };
+    form.onsubmit = async e => {
+      e.preventDefault();
+      const text = form.querySelector("textarea").value.trim(), name = form.querySelector("input").value.trim();
+      if (!text) return;
+      const n = { sec, text, name };
+      const mine = JSON.parse(ls("kotcoop-wiki-local") || "[]"); mine.push(n); ls("kotcoop-wiki-local", JSON.stringify(mine));
+      if (WIKINOTES.formUrl) try { await fetch(WIKINOTES.formUrl, { method: "POST", mode: "no-cors", body: new URLSearchParams({ [WIKINOTES.section]: sec, [WIKINOTES.text]: text, [WIKINOTES.name]: name }) }) } catch (e) {}
+      part.querySelector(".notes").insertAdjacentHTML("beforeend", noteHTML(n).replace("<li>", '<li class="new">'));
+      form.reset(); form.hidden = true; sketchAll();
+    };
+  });
+  wikiNotes = await loadWikiNotes();
+  if (currentWiki !== id) return;
+  parts.forEach(part => { part.querySelector(".notes").innerHTML = wikiNotes.filter(n => n.sec === part.dataset.sec).map(noteHTML).join("") });
+  sketchAll();
 }
 
 
