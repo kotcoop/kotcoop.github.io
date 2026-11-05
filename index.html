@@ -255,6 +255,7 @@ nav.tabs .dd[open] summary::after { transform: rotate(180deg) }
 nav.tabs .dd summary:hover, nav.tabs .dd[open] summary { background: var(--ink); color: #fff; text-decoration: none }
 nav.tabs .dd.cur summary { background: var(--blue); color: #fff; text-decoration: none }
 nav.tabs .ddm { position: absolute; top: 100%; left: -1.5px; z-index: 20; min-width: 100%; display: grid; background: var(--paper); border: 1.5px solid var(--ink); box-shadow: 4px 4px 0 var(--ink); animation: drop .3s cubic-bezier(.3,1.4,.5,1) both }
+nav.tabs .dd:last-of-type .ddm { left: auto; right: -1.5px }
 nav.tabs .ddm a { text-align: left; flex: none; justify-content: flex-start }
 /* install button */
 .btn.install { position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 40; box-shadow: 4px 4px 0 var(--blue); animation: drop .6s cubic-bezier(.3,1.6,.5,1) both }
@@ -371,7 +372,10 @@ nav.tabs a, nav.tabs .dd summary { display: flex; align-items: center; justify-c
         <div class="ddm"><a href="#membership">Becoming a member</a><a href="#members">Members</a></div>
       </details>
       <a href="#governance">Governance</a>
-      <a href="#statutes">Statutes</a>
+      <details class="dd" data-views="coopstatutes statutes">
+        <summary>Statutes</summary>
+        <div class="ddm"><a href="#coopstatutes">Statutes</a><a href="#statutes">Jokerweek statutes</a></div>
+      </details>
     </nav>
   </div>
 </header>
@@ -413,7 +417,7 @@ nav.tabs a, nav.tabs .dd summary { display: flex; align-items: center; justify-c
       <div class="stop"><a class="dot" href="#wiki" style="--d:140px">Wiki</a></div>
       <div class="stop"><a class="dot" href="#membership" style="--d:188px">Becoming a member</a></div>
       <div class="stop"><a class="dot" href="#governance" style="--d:188px">Governance</a></div>
-      <div class="stop"><a class="dot" href="#statutes" style="--d:165px">Statutes</a></div>
+      <div class="stop"><a class="dot" href="#coopstatutes" style="--d:165px">Statutes</a></div>
       <div class="stop"><a class="dot" href="#food" style="--d:140px">Food</a></div>
     </nav>
     </div>
@@ -460,7 +464,7 @@ nav.tabs a, nav.tabs .dd summary { display: flex; align-items: center; justify-c
     </div>
     <div class="box members">
       <ol id="members-list"></ol>
-      <div class="btns"><button class="btn" type="button" id="members-enter">Enter KOTCOOP! →</button><a class="btn alt" href="#statutes">See the statutes →</a></div>
+      <div class="btns"><button class="btn" type="button" id="members-enter">Enter KOTCOOP! →</button><a class="btn alt" href="#coopstatutes">See the statutes →</a></div>
     </div>
   </section>
 
@@ -480,10 +484,32 @@ nav.tabs a, nav.tabs .dd summary { display: flex; align-items: center; justify-c
     </div>
   </section>
 
+  <!-- COOPERATIVE STATUTES -->
+  <section class="view" id="v-coopstatutes" hidden>
+    <div class="titlebox">
+      <div class="box"><h2>Statutes</h2><span class="sub">KOTCOOP! cv · what every member agrees to · <span class="mark">draft</span></span></div>
+      <div class="tex hatch" aria-hidden="true"></div>
+    </div>
+    <div class="box rows">
+      <div class="row"><span class="k">Art. 1 Name &amp; seat</span><p>The cooperative is called KOTCOOP! cv. Its seat is in Ghent. <span class="mark">Adres.</span></p></div>
+      <div class="row"><span class="k">Art. 2 Purpose</span><p>KOTCOOP! provides affordable, good-quality housing for students in Ghent, owned and run by its members. Homes are never sold on for profit.</p></div>
+      <div class="row"><span class="k">Art. 3 Values</span><p>Open and voluntary membership, democratic control (one member, one vote), solidarity between generations of students, and care for the city and its neighbourhoods.</p></div>
+      <div class="row"><span class="k">Art. 4 Members</span><p>Anyone who supports the purpose can join: residents, former residents, supporters and partners. The board admits new members; a refusal can be appealed to the general assembly.</p></div>
+      <div class="row"><span class="k">Art. 5 Shares</span><p>Each member buys at least one share of <span class="mark">€ …</span>. Students can pay it in instalments. Shares give a vote, not a property, and are paid back at nominal value when a member leaves.</p></div>
+      <div class="row"><span class="k">Art. 6 Liability</span><p>Members are liable only up to the value of their shares.</p></div>
+      <div class="row"><span class="k">Art. 7 General assembly</span><p>All members together, at least once a year. It approves the accounts and budget, elects the board, changes these statutes (two-thirds majority) and takes the big decisions.</p></div>
+      <div class="row"><span class="k">Art. 8 Board</span><p>At least three members, elected for two years, of whom at least half are residents. The board runs daily business and reports to the assembly.</p></div>
+      <div class="row"><span class="k">Art. 9 Rents</span><p>Rents cover costs, maintenance and a reserve for new homes, nothing more. The assembly sets them each year.</p></div>
+      <div class="row"><span class="k">Art. 10 Surplus</span><p>Any surplus goes back into the cooperative: repairs, lower rents or new housing. No dividends beyond a small, capped return on shares.</p></div>
+      <div class="row"><span class="k">Art. 11 Leaving</span><p>Members can leave at the end of each financial year. A member who seriously harms the cooperative can be excluded by the assembly, after being heard.</p></div>
+      <div class="row"><span class="k">Art. 12 Dissolution</span><p>If the cooperative is dissolved, what remains after paying back the shares goes to another non-profit housing project, never to the members.</p></div>
+    </div>
+  </section>
+
   <!-- STATUTES -->
   <section class="view" id="v-statutes" hidden>
     <div class="titlebox">
-      <div class="box"><h2>Statutes</h2><span class="sub">What every member agrees to · <span class="mark">draft</span></span></div>
+      <div class="box"><h2>Jokerweek statutes</h2><span class="sub">The rules of the week · <span class="mark">draft</span></span></div>
       <div class="tex stipple" aria-hidden="true"></div>
     </div>
     <div class="box rows">
@@ -685,7 +711,7 @@ const WIKI = [
 ];
 
 // ---- Routing ----
-const VIEWS = ["manifesto","schedule","membership","members","governance","statutes","food","locations","wiki","forum"];
+const VIEWS = ["coopstatutes","manifesto","schedule","membership","members","governance","statutes","food","locations","wiki","forum"];
 function route() {
   const v = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : "manifesto";
   VIEWS.forEach(n => document.getElementById("v-" + n).hidden = n !== v);
