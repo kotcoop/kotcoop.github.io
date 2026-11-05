@@ -45,7 +45,18 @@ p { margin: 0; max-width: 68ch }
 
 /* header */
 header.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; padding-block: 16px 12px; background: var(--paper) }
-.top .wrap { display: flex; align-items: flex-start; gap: 24px }
+.top .wrap { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 24px }
+/* member mode switch, top right: shows the pencils so members can edit */
+.modebar { flex: 0 0 100%; display: flex; justify-content: flex-end; margin-bottom: -16px }
+.mode { all: unset; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font: 500 11px/1 var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--ink); padding: 4px 2px }
+.mode .sw { width: 30px; height: 16px; border: 1.5px solid var(--ink); border-radius: 99px; position: relative; transition: background .2s, border-color .2s }
+.mode .sw::after { content: ""; position: absolute; top: 2px; left: 2px; width: 9px; height: 9px; border-radius: 50%; background: var(--ink); transition: transform .2s, background .2s }
+.mode[aria-pressed="true"] { color: var(--blue) }
+.mode[aria-pressed="true"] .sw { background: var(--blue); border-color: var(--blue) }
+.mode[aria-pressed="true"] .sw::after { transform: translateX(14px); background: #fff }
+.mode:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px }
+body:not(.editing) .pencil, body:not(.editing) .addpart, body:not(.editing) .wedit { display: none !important }
+body.editing .box.rows, body.editing #wiki-page { outline: 2px dashed var(--blue); outline-offset: 4px }
 .logo { display: grid; grid-template-columns: auto; background: var(--paper); border: 1.5px solid var(--ink); text-decoration: none; flex: none;
   font: 500 14px/1 var(--display); text-transform: uppercase; color: var(--text) }
 .logo span { padding: 8px 10px; border-right: 1.5px solid var(--ink) }
@@ -166,7 +177,10 @@ h3 { font-size: 17px; font-weight: 500; line-height: 1.2 }
 .wedit .t { font: 400 18px/1.2 var(--display); text-transform: uppercase }
 .addpart { display: grid; gap: 10px; padding-top: 10px; border-top: 1px dashed var(--grid) }
 .addpart > .btn { justify-self: start }
-.wpart.added h3, .wpart .by { color: var(--blue) }
+.wpart.added h3, .wpart .by, .row.added .k, .row .by { color: var(--blue) }
+.row .notes, .row .wedit { margin-top: 10px }
+.row .k .pencil { width: 24px; height: 24px; margin-left: 4px; vertical-align: middle }
+.row .k .pencil svg { width: 14px; height: 14px }
 .wpart .by { margin: 0; font-size: 12px }
 .wpart.new { animation: drop .5s cubic-bezier(.3,1.6,.5,1) both }
 .wedit[hidden] { display: none }
@@ -186,7 +200,8 @@ footer { padding-block: 0 24px; font-size: 12px; text-transform: uppercase }
 footer .box { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; padding: 10px 14px }
 
 @media (max-width: 760px) {
-  .top .wrap { flex-direction: column; gap: 10px }
+  .top .wrap { flex-direction: column; gap: 6px }
+  .modebar { flex: none; align-self: stretch; margin-bottom: 0 }
   nav.tabs { margin-left: 0; max-width: 100% }
   .titlebox { grid-template-columns: 1fr }
   .titlebox .tex { border-left: 1.5px solid var(--ink); border-top: 0; min-height: 60px }
@@ -270,6 +285,22 @@ nav.tabs .ddm a { text-align: left; flex: none; justify-content: flex-start }
 @keyframes nudge { 50% { transform: translateY(10px) } }
 @keyframes nudgeup { 50% { transform: translateY(-10px) } }
 .ioshelp ol { margin: 0; padding-left: 20px; display: grid; gap: 6px }
+/* governance scheme: a word web you build together */
+.scheme { margin-top: 28px; padding: 18px 22px 22px; display: grid; gap: 12px }
+.scheme-head { display: grid; gap: 4px }
+.scheme-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center }
+body:not(.editing) .scheme-tools { display: none }
+.scheme-tools input { font: 16px var(--display); text-transform: uppercase; border: 1.5px solid var(--blue); background: var(--paper); color: var(--text); padding: 9px 10px; flex: 1 1 180px; min-width: 0; border-radius: 0 }
+.scheme-tools .btn { padding: 11px 12px }
+.sc-status { font: 12px var(--mono); color: var(--blue) }
+#sc-svg { width: 100%; height: auto; display: block; touch-action: none; user-select: none }
+#sc-svg .link { fill: none; stroke: var(--ink); stroke-width: 2; stroke-linecap: round }
+#sc-svg .node path { fill: var(--paper); stroke: var(--ink); stroke-width: 2 }
+#sc-svg .node text { font: 400 15px var(--display); text-transform: uppercase; fill: var(--text); text-anchor: middle; dominant-baseline: central; pointer-events: none }
+#sc-svg .node.root path { fill: var(--ink) } #sc-svg .node.root text { fill: #fff; font-size: 19px }
+body.editing #sc-svg .node { cursor: grab }
+#sc-svg .node.sel path { stroke: var(--blue); stroke-width: 3.5 }
+#sc-svg .node:hover path { stroke: var(--blue) }
 /* entry gate + member list */
 .gate { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px; background: color-mix(in srgb, var(--paper) 92%, transparent) }
 .gate[hidden] { display: none }
@@ -358,6 +389,7 @@ nav.tabs a, nav.tabs .dd summary { display: flex; align-items: center; justify-c
 <div class="halo-glow" aria-hidden="true"></div><div class="halo" aria-hidden="true"></div>
 <header class="top">
   <div class="wrap">
+    <div class="modebar"><button type="button" id="mode" class="mode" aria-pressed="false"><span class="sw" aria-hidden="true"></span>Member mode</button></div>
     <nav class="tabs" aria-label="Sections">
       <a href="#manifesto">Manifesto</a>
       <details class="dd" data-views="schedule food">
@@ -481,6 +513,17 @@ nav.tabs a, nav.tabs .dd summary { display: flex; align-items: center; justify-c
       <div class="row"><span class="k">Deliverables</span><p>What every group presents on Friday. <span class="mark">Formaat, panelen, maquette, presentatieduur.</span></p></div>
       <div class="row"><span class="k">Assembly</span><p>Friday's general assembly: final presentations to the jury and all members. <span class="mark">Jury en beoordeling.</span></p></div>
       <div class="row"><span class="k">Contact</span><p><span class="mark">E-mailadres van de organisatie.</span></p></div>
+    </div>
+    <div class="box scheme" id="scheme">
+      <div class="scheme-head"><h3>Governance scheme</h3><span class="sub">Build it together · turn on member mode to edit</span></div>
+      <div class="scheme-tools">
+        <input id="sc-text" maxlength="40" placeholder="select a word…" aria-label="Text of the selected word">
+        <button class="btn alt" type="button" id="sc-add">+ Branch</button>
+        <button class="btn alt" type="button" id="sc-del">Delete</button>
+        <button class="btn" type="button" id="sc-save">Save scheme</button>
+        <span class="sc-status" id="sc-status"></span>
+      </div>
+      <svg id="sc-svg" viewBox="0 0 1000 560" role="img" aria-label="Governance scheme"></svg>
     </div>
   </section>
 
@@ -824,35 +867,62 @@ async function sendWiki(row) {
   if (WIKINOTES.formUrl) try { await fetch(WIKINOTES.formUrl, { method: "POST", mode: "no-cors", body: new URLSearchParams({ [WIKINOTES.section]: row.sec, [WIKINOTES.text]: row.text, [WIKINOTES.name]: row.name }) }) } catch (e) {}
 }
 const PEN = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1-5L16 4l4 4L9 19z M14 6l4 4"/></svg>';
-function setupPart(part, sec) {
-  const h = part.querySelector("h3");
+// One editable part: h = its title element, holder = where notes and the edit form go
+function setupPart(part, sec, h, holder) {
+  holder = holder || part;
   part.dataset.sec = sec;
   const pen = document.createElement("button");
   pen.type = "button"; pen.className = "pencil"; pen.title = "Edit this part"; pen.setAttribute("aria-label", "Edit this part"); pen.innerHTML = PEN;
-  (h || part).prepend(pen);
-  part.insertAdjacentHTML("beforeend", `<ul class="notes"></ul>
+  if (h) h.append(pen); else holder.prepend(pen);
+  holder.insertAdjacentHTML("beforeend", `<ul class="notes"></ul>
     <form class="wedit" hidden>${h ? '<label>Title<input class="t" maxlength="80"></label>' : ""}
     <label>Add text<textarea rows="3" placeholder="Type your addition…"></textarea></label>
     <div class="row2"><input class="n" placeholder="name" maxlength="40"><button class="btn" type="submit">Save</button><button class="btn alt" type="button" data-cancel>Cancel</button></div></form>`);
-  const form = part.querySelector(".wedit"), title = form.querySelector(".t");
-  const headingText = () => h ? [...h.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent).join("").trim() : "";
-  pen.onclick = () => { form.hidden = !form.hidden; if (!form.hidden) { form.querySelector(".n").value = ls("kotcoop-name") || ""; if (title) title.value = headingText(); form.querySelector("textarea").focus() } sketchAll() };
+  const form = holder.querySelector(":scope > .wedit"), title = form.querySelector(".t");
+  pen.onclick = () => { form.hidden = !form.hidden; if (!form.hidden) { form.querySelector(".n").value = ls("kotcoop-name") || ""; if (title) title.value = headingText(h); form.querySelector("textarea").focus() } sketchAll() };
   form.querySelector("[data-cancel]").onclick = () => { form.hidden = true; sketchAll() };
   form.onsubmit = async e => {
     e.preventDefault();
     const text = form.querySelector("textarea").value.trim(), name = form.querySelector(".n").value.trim();
     const newTitle = title ? title.value.trim().replace(/\s+/g, " ") : "";
-    if (newTitle && newTitle !== headingText()) { setHeading(h, newTitle); await sendWiki({ sec: "title:" + sec, text: newTitle, name }) }
-    if (text) { const n = { sec, text, name }; part.querySelector(".notes").insertAdjacentHTML("beforeend", noteHTML(n).replace("<li>", '<li class="new">')); await sendWiki(n) }
+    if (newTitle && newTitle !== headingText(h)) { setHeading(h, newTitle); await sendWiki({ sec: "title:" + sec, text: newTitle, name }) }
+    if (text) { const n = { sec, text, name }; holder.querySelector(":scope > .notes").insertAdjacentHTML("beforeend", noteHTML(n).replace("<li>", '<li class="new">')); await sendWiki(n) }
     form.reset(); form.hidden = true; sketchAll();
   };
 }
-function setHeading(h, t) { [...h.childNodes].filter(n => n.nodeType === 3).forEach(n => n.remove()); h.append(t) }
+function headingText(h) { return h ? [...h.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent).join("").trim() : "" }
+function setHeading(h, t) { [...h.childNodes].filter(n => n.nodeType === 3).forEach(n => n.remove()); h.prepend(t) }
+// "+ New …" button and form at the end of a container; onAdd(title, body, name) builds the new part
+function addPartForm(container, label, onAdd, scope) {
+  container.insertAdjacentHTML("beforeend", `<div class="addpart"><button class="btn alt" type="button">+ ${label}</button>
+    <form class="wedit" hidden><label>Title<input class="t" required maxlength="80"></label><label>Text<textarea rows="4"></textarea></label>
+    <div class="row2"><input class="n" placeholder="name" maxlength="40"><button class="btn" type="submit">Add</button><button class="btn alt" type="button" data-cancel>Cancel</button></div></form></div>`);
+  const add = container.querySelector(":scope > .addpart"), f = add.querySelector("form");
+  add.querySelector("button").onclick = () => { f.hidden = !f.hidden; f.querySelector(".n").value = ls("kotcoop-name") || ""; f.querySelector(".t").focus(); sketchAll() };
+  f.querySelector("[data-cancel]").onclick = () => { f.hidden = true; sketchAll() };
+  f.onsubmit = async e => {
+    e.preventDefault();
+    const t = f.querySelector(".t").value.trim().replace(/\s+/g, " "), body = f.querySelector("textarea").value.trim(), name = f.querySelector(".n").value.trim();
+    if (!t) return;
+    onAdd(t, body, name).classList.add("new");
+    await sendWiki({ sec: "new:" + scope, text: t + (body ? "\n\n" + body : ""), name });
+    f.reset(); f.hidden = true; sketchAll();
+  };
+}
+// replay what people did, oldest first: new parts, then renamed titles, then additions
+function replay(container, scope, notes, onAdd) {
+  const keys = () => Object.fromEntries([...container.querySelectorAll("[data-sec]")].map(p => [p.dataset.sec, p]));
+  for (const n of notes) if (n.sec === "new:" + scope) { const [t, ...rest] = n.text.split("\n"); if (!keys()[scope + "/" + slug(t)]) onAdd(t.trim(), rest.join("\n").trim(), n.name) }
+  const map = keys();
+  for (const n of notes) if (n.sec.startsWith("title:") && map[n.sec.slice(6)]) { const h = map[n.sec.slice(6)].querySelector("h3, .k"); if (h) setHeading(h, n.text) }
+  for (const [k, part] of Object.entries(map)) { const ul = part.querySelector(".notes"); if (ul) ul.innerHTML = notes.filter(n => n.sec === k).map(noteHTML).join("") }
+}
+function byLine(name) { return name ? `<p class="by">— ${esc(name)}</p>` : "" }
 function newPart(page, pageId, t, body, name) {
   const part = document.createElement("section"); part.className = "wpart added";
-  part.innerHTML = `<h3>${esc(t)}</h3>${body ? `<p>${esc(body).replace(/\n/g, "<br>")}</p>` : ""}${name ? `<p class="by">— ${esc(name)}</p>` : ""}`;
-  page.insertBefore(part, page.querySelector(".addpart"));
-  setupPart(part, pageId + "/" + slug(t));
+  part.innerHTML = `<h3>${esc(t)}</h3>${body ? `<p>${esc(body).replace(/\n/g, "<br>")}</p>` : ""}${byLine(name)}`;
+  page.insertBefore(part, page.querySelector(":scope > .addpart"));
+  setupPart(part, pageId + "/" + slug(t), part.querySelector("h3"));
   return part;
 }
 async function decorateWiki() {
@@ -861,32 +931,103 @@ async function decorateWiki() {
   const parts = []; let cur = null;
   [...page.children].forEach(el => { if (el.tagName === "H3" || !cur) { cur = document.createElement("section"); cur.className = "wpart"; parts.push(cur) } cur.appendChild(el) });
   page.replaceChildren(...parts);
-  parts.forEach((part, i) => { const h = part.querySelector("h3"); setupPart(part, id + "/" + (h ? slug(h.textContent) : i)) });
-  // "+ New part" at the bottom of every page
-  page.insertAdjacentHTML("beforeend", `<div class="addpart"><button class="btn alt" type="button">+ New part</button>
-    <form class="wedit" hidden><label>Title<input class="t" required maxlength="80"></label><label>Text<textarea rows="4" placeholder="What is this part about?"></textarea></label>
-    <div class="row2"><input class="n" placeholder="name" maxlength="40"><button class="btn" type="submit">Add part</button><button class="btn alt" type="button" data-cancel>Cancel</button></div></form></div>`);
-  const add = page.querySelector(".addpart"), aform = add.querySelector("form");
-  add.querySelector("button").onclick = () => { aform.hidden = !aform.hidden; aform.querySelector(".n").value = ls("kotcoop-name") || ""; aform.querySelector(".t").focus(); sketchAll() };
-  aform.querySelector("[data-cancel]").onclick = () => { aform.hidden = true; sketchAll() };
-  aform.onsubmit = async e => {
-    e.preventDefault();
-    const t = aform.querySelector(".t").value.trim().replace(/\s+/g, " "), body = aform.querySelector("textarea").value.trim(), name = aform.querySelector(".n").value.trim();
-    if (!t) return;
-    newPart(page, id, t, body, name).classList.add("new");
-    await sendWiki({ sec: "new:" + id, text: t + (body ? "\n\n" + body : ""), name });
-    aform.reset(); aform.hidden = true; sketchAll();
-  };
+  parts.forEach((part, i) => { const h = part.querySelector("h3"); setupPart(part, id + "/" + (h ? slug(h.textContent) : i), h) });
+  const add = (t, body, name) => newPart(page, id, t, body, name);
+  addPartForm(page, "New part", add, id);
   wikiNotes = await loadWikiNotes();
   if (currentWiki !== id) return;
-  // replay what people did, oldest first: new parts, then renamed titles, then additions
-  const byKey = () => Object.fromEntries([...page.querySelectorAll(".wpart")].map(p => [p.dataset.sec, p]));
-  for (const n of wikiNotes) if (n.sec === "new:" + id) { const [t, ...rest] = n.text.split("\n"); if (!byKey()[id + "/" + slug(t)]) newPart(page, id, t.trim(), rest.join("\n").trim(), n.name) }
-  const map = byKey();
-  for (const n of wikiNotes) if (n.sec.startsWith("title:") && map[n.sec.slice(6)]) { const h = map[n.sec.slice(6)].querySelector("h3"); if (h) setHeading(h, n.text) }
-  for (const [k, part] of Object.entries(map)) part.querySelector(".notes").innerHTML = wikiNotes.filter(n => n.sec === k).map(noteHTML).join("");
+  replay(page, id, wikiNotes, add);
   sketchAll();
 }
+// The pages made of articles (statutes, governance, membership) get the same pencils, per article
+function newRow(box, view, t, body, name) {
+  const row = document.createElement("div"); row.className = "row added";
+  row.innerHTML = `<span class="k">${esc(t)}</span><div>${body ? `<p>${esc(body).replace(/\n/g, "<br>")}</p>` : ""}${byLine(name)}</div>`;
+  box.insertBefore(row, box.querySelector(":scope > .addpart"));
+  setupPart(row, view + "/" + slug(t), row.querySelector(".k"), row.children[1]);
+  return row;
+}
+async function decorateRows() {
+  const boxes = ["membership", "governance", "coopstatutes", "statutes"].map(v => [v, document.querySelector(`#v-${v} .box.rows`)]).filter(([, b]) => b);
+  for (const [view, box] of boxes) {
+    box.querySelectorAll(":scope > .row").forEach(row => {
+      const k = row.querySelector(".k"); let cell = row.children[1];
+      if (cell.tagName === "P") { const d = document.createElement("div"); cell.replaceWith(d); d.append(cell); cell = d }   // a cell that can hold notes too
+      setupPart(row, view + "/" + slug(k.textContent), k, cell);
+    });
+    addPartForm(box, "New article", (t, b, n) => newRow(box, view, t, b, n), view);
+  }
+  const notes = await loadWikiNotes();
+  for (const [view, box] of boxes) replay(box, view, notes, (t, b, n) => newRow(box, view, t, b, n));
+  sketchAll();
+}
+// ---- Governance scheme: a word web; in member mode select a word, rename it, add branches, drag, save ----
+const SCHEME_DEFAULT = { nodes: [
+  { id: "r", text: "KOTCOOP!", x: 500, y: 280 },
+  { id: "a", text: "General assembly", x: 250, y: 140, p: "r" }, { id: "b", text: "Board", x: 760, y: 140, p: "r" },
+  { id: "c", text: "Working groups", x: 230, y: 430, p: "r" }, { id: "d", text: "House meetings", x: 770, y: 430, p: "r" },
+  { id: "a1", text: "One member one vote", x: 230, y: 45, p: "a" }, { id: "b1", text: "Daily business", x: 800, y: 45, p: "b" },
+  { id: "c1", text: "Maintenance", x: 110, y: 520, p: "c" }, { id: "c2", text: "Finance", x: 350, y: 520, p: "c" },
+  { id: "d1", text: "Shared spaces", x: 800, y: 520, p: "d" } ] };
+const scheme = { data: JSON.parse(JSON.stringify(SCHEME_DEFAULT)), sel: null };
+function drawScheme() {
+  const svg = document.getElementById("sc-svg"), N = scheme.data.nodes, by = Object.fromEntries(N.map(n => [n.id, n]));
+  const w = n => Math.max(70, n.text.length * (n.p ? 9.5 : 12) + 34), h = n => n.p ? 42 : 56;
+  let out = "";
+  for (const n of N) if (n.p && by[n.p]) { const a = by[n.p], mx = (a.x + n.x) / 2; out += `<path class="link" d="M ${a.x} ${a.y} C ${mx} ${a.y}, ${mx} ${n.y}, ${n.x} ${n.y}"/>` }
+  N.forEach((n, i) => {
+    const W = w(n), H = h(n), r = rng(i * 53 + n.text.length), pts = [];
+    for (let k = 0; k < 12; k++) { const t = k / 12 * Math.PI * 2; pts.push([n.x + Math.cos(t) * (W / 2 + r() * 3), n.y + Math.sin(t) * (H / 2 + r() * 3)]) }
+    out += `<g class="node${n.p ? "" : " root"}${scheme.sel === n.id ? " sel" : ""}" data-id="${n.id}"><path d="${smooth(pts, true)}"/><text x="${n.x}" y="${n.y}">${esc(n.text)}</text></g>`;
+  });
+  svg.innerHTML = out;
+}
+(function () {
+  const svg = document.getElementById("sc-svg"), input = document.getElementById("sc-text"), status = document.getElementById("sc-status");
+  const node = id => scheme.data.nodes.find(n => n.id === id);
+  const pt = e => { const m = svg.getScreenCTM().inverse(), p = new DOMPoint(e.clientX, e.clientY).matrixTransform(m); return [p.x, p.y] };
+  const select = id => { scheme.sel = id; input.value = id ? node(id).text : ""; drawScheme() };
+  const dirty = () => { status.textContent = "not saved yet" };
+  let drag = null;
+  svg.addEventListener("pointerdown", e => {
+    if (!document.body.classList.contains("editing")) return;
+    const g = e.target.closest(".node"); if (!g) { select(null); return }
+    const n = node(g.dataset.id), [x, y] = pt(e); drag = { n, dx: n.x - x, dy: n.y - y, moved: false };
+    svg.setPointerCapture(e.pointerId); select(n.id);
+  });
+  svg.addEventListener("pointermove", e => { if (!drag) return; const [x, y] = pt(e); drag.n.x = Math.round(Math.max(40, Math.min(960, x + drag.dx))); drag.n.y = Math.round(Math.max(30, Math.min(530, y + drag.dy))); drag.moved = true; drawScheme() });
+  svg.addEventListener("pointerup", () => { if (drag && drag.moved) dirty(); drag = null });
+  input.oninput = () => { const n = node(scheme.sel); if (n) { n.text = input.value; drawScheme(); dirty() } };
+  document.getElementById("sc-add").onclick = () => {
+    const p = node(scheme.sel) || scheme.data.nodes[0], a = Math.random() * Math.PI * 2;
+    const n = { id: Math.random().toString(36).slice(2, 8), text: "New word", x: Math.round(Math.max(60, Math.min(940, p.x + Math.cos(a) * 150))), y: Math.round(Math.max(40, Math.min(520, p.y + Math.sin(a) * 110))), p: p.id };
+    scheme.data.nodes.push(n); select(n.id); input.select(); dirty();
+  };
+  document.getElementById("sc-del").onclick = () => {
+    const n = node(scheme.sel); if (!n || !n.p) return;           // the centre stays
+    const gone = new Set([n.id]); let grew = true;
+    while (grew) { grew = false; for (const m of scheme.data.nodes) if (m.p && gone.has(m.p) && !gone.has(m.id)) { gone.add(m.id); grew = true } }
+    scheme.data.nodes = scheme.data.nodes.filter(m => !gone.has(m.id)); select(null); dirty();
+  };
+  document.getElementById("sc-save").onclick = async () => {
+    status.textContent = "saving…";
+    await sendWiki({ sec: "scheme:governance", text: JSON.stringify(scheme.data), name: ls("kotcoop-name") || "" });
+    status.textContent = "saved ✓ (others see it in a few minutes)";
+  };
+  drawScheme();
+  loadWikiNotes().then(notes => {                                    // the latest saved version wins
+    const last = notes.filter(n => n.sec === "scheme:governance").pop();
+    if (last) try { const d = JSON.parse(last.text); if (d.nodes && d.nodes.length) { scheme.data = d; drawScheme() } } catch (e) {}
+  });
+})();
+
+// Member mode: the switch top right shows the pencils (log-in links come later)
+(function () {
+  const btn = document.getElementById("mode");
+  const set = on => { document.body.classList.toggle("editing", on); btn.setAttribute("aria-pressed", on); ls("kotcoop-mode", on ? "1" : "0"); requestAnimationFrame(sketchAll) };
+  btn.onclick = () => set(!document.body.classList.contains("editing"));
+  set(ls("kotcoop-mode") === "1");
+})();
 
 // ---- Red thread: one line from the top of the page, weaving behind the boxes, through every circle ----
 function drawThread() {
@@ -1143,7 +1284,7 @@ document.fonts && document.fonts.ready.then(redraw);
 })();
 
 if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
-drawMaps(); renderAgenda(); renderWiki(); route(); redraw();
+drawMaps(); renderAgenda(); renderWiki(); decorateRows(); route(); redraw();
 
 // menu dropdowns: only one open at a time, close when clicking elsewhere
 document.addEventListener("click", e => document.querySelectorAll("nav.tabs .dd[open]").forEach(dd => { if (!dd.contains(e.target)) dd.open = false }));
