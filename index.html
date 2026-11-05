@@ -760,7 +760,7 @@ function renderWiki() {
 
 // ---- Wiki: a pencil on every part, so anyone can type additions under it ----
 // Additions go to a Google Form; its Sheet (published as CSV) is read back so everyone sees them. Until that is set, they stay on this device.
-const WIKINOTES = { formUrl: "", section: "", text: "", name: "", csvUrl: "" };
+const WIKINOTES = { formUrl: "https://docs.google.com/forms/d/e/1FAIpQLSc_1Ts3iTQMAwbiARq6pD_-yFO_m59BrXHqfQg-K3_b3_FuQA/formResponse", section: "entry.1121122640", text: "entry.117795215", name: "entry.1008663552", csvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRjEOG5xghHctEeTsV4A56c0TKtakA3quH2hp4IxbbesQWP1s_Jb9EyMUJzKFFbebyzZ7z9IKlHaVeM/pub?output=csv" };
 function ls(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v) } catch (e) { return null } }
 function esc(t) { return String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]) }
 function parseCSV(t) {               // handles quotes, commas and line breaks inside answers
