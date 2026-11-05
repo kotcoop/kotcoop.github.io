@@ -301,6 +301,13 @@ body:not(.editing) .scheme-tools { display: none }
 body.editing #sc-svg .node { cursor: grab }
 #sc-svg .node.sel path { stroke: var(--blue); stroke-width: 3.5 }
 #sc-svg .node:hover path { stroke: var(--blue) }
+/* member mode: existing text becomes editable */
+body.editing .ed { cursor: text; outline: 1px dashed color-mix(in srgb, var(--blue) 55%, transparent); outline-offset: 3px; border-radius: 2px }
+body.editing .ed:hover { outline-color: var(--blue) }
+body.editing .ed:focus { outline: 2px solid var(--blue); background: color-mix(in srgb, var(--blue) 7%, transparent) }
+body.editing .manifesto .w { opacity: 1 !important }
+#toast { position: fixed; left: 50%; bottom: 24px; translate: -50% 20px; z-index: 60; background: var(--blue); color: #fff; font: 500 12px var(--mono); text-transform: uppercase; letter-spacing: .06em; padding: 10px 14px; opacity: 0; transition: opacity .2s, translate .2s; pointer-events: none }
+#toast.on { opacity: 1; translate: -50% 0 }
 /* entry gate + member list */
 .gate { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px; background: color-mix(in srgb, var(--paper) 92%, transparent) }
 .gate[hidden] { display: none }
@@ -427,7 +434,7 @@ nav.tabs a, nav.tabs .dd summary { display: flex; align-items: center; justify-c
   <section class="view" id="v-manifesto">
     <svg class="thread-line" aria-hidden="true"><path id="thread-path"/></svg>
     <div class="titlebox">
-      <div class="box"><h1>KOTCOOP!</h1><span class="sub">Jokerweek 2027 · 22.03 – 26.03 · Engineering Architecture UGent</span></div>
+      <div class="box"><h1>KOTCOOP!</h1><span class="sub">Jokerweek 2027&emsp;&emsp;22.03 – 26.03&emsp;&emsp;Engineering Architecture UGent</span></div>
       <a class="tex mapbox" href="#locations" aria-label="Map of Ghent: open locations"><span class="map" data-map="small"></span><span class="maptag">Locations →</span></a>
     </div>
     <div class="mrow">
@@ -937,6 +944,7 @@ async function decorateWiki() {
   wikiNotes = await loadWikiNotes();
   if (currentWiki !== id) return;
   replay(page, id, wikiNotes, add);
+  applyTexts(wikiNotes); refreshEditables();
   sketchAll();
 }
 // The pages made of articles (statutes, governance, membership) get the same pencils, per article
@@ -1021,10 +1029,62 @@ function drawScheme() {
   });
 })();
 
+// ---- Member mode, part 2: click any existing text and type. Each change is saved as "text:<key>" (the latest wins) ----
+function editables() {
+  const out = [];
+  document.querySelectorAll("#v-manifesto .manifesto .reveal").forEach((el, i) => out.push([el, "manifesto#" + i]));
+  document.querySelectorAll(".view .titlebox .box > h2, .view .titlebox .box > .sub").forEach(el => out.push([el, el.closest(".view").id + "#" + el.tagName.toLowerCase()]));
+  document.querySelectorAll(".box.rows > .row[data-sec] > div > p:first-child").forEach(el => out.push([el, el.closest(".row").dataset.sec + "#text"]));
+  document.querySelectorAll("#wiki-page .wpart").forEach(part =>
+    part.querySelectorAll(":scope > p:not(.by), :scope > ul:not(.notes) > li, :scope > dl > dt, :scope > dl > dd").forEach((el, j) => out.push([el, part.dataset.sec + "#" + j])));
+  return out;
+}
+function clean(html) {               // keep only simple markup: bold, italic, line breaks, highlights and placeholders
+  const t = document.createElement("template"); t.innerHTML = html;
+  const walk = node => [...node.childNodes].forEach(n => {
+    if (n.nodeType !== 1) { if (n.nodeType !== 3) n.remove(); return }
+    walk(n);
+    const keep = ["B", "STRONG", "I", "EM", "BR"].includes(n.tagName), cls = n.tagName === "SPAN" && ["mark", "hl"].find(c => n.classList.contains(c));
+    if (cls) { [...n.attributes].forEach(a => n.removeAttribute(a.name)); n.className = cls }
+    else if (keep) [...n.attributes].forEach(a => n.removeAttribute(a.name));
+    else if (n.tagName === "DIV" || n.tagName === "P") { n.before(document.createElement("br")); n.replaceWith(...n.childNodes) }
+    else n.replaceWith(...n.childNodes);
+  });
+  walk(t.content);
+  return t.innerHTML.replace(/^(<br>)+|(<br>)+$/g, "").trim();
+}
+function applyTexts(notes) {
+  const last = {};
+  for (const n of notes) if (n.sec.startsWith("text:")) last[n.sec.slice(5)] = n.text;
+  for (const [el, key] of editables()) if (key in last && document.activeElement !== el) {
+    el.innerHTML = clean(last[key]);
+    if (el.matches(".manifesto .reveal")) wrapWords(el);
+  }
+}
+function refreshEditables() {
+  const on = document.body.classList.contains("editing");
+  for (const [el, key] of editables()) { el.contentEditable = on ? "true" : "false"; el.classList.toggle("ed", on); el.dataset.key = key; el.spellcheck = on }
+}
+document.addEventListener("focusin", e => { const el = e.target.closest?.(".ed"); if (el) el._before = clean(el.innerHTML) });
+document.addEventListener("focusout", async e => {
+  const el = e.target.closest?.(".ed"); if (!el) return;
+  const now = clean(el.innerHTML); if (now === el._before) return;
+  if (el.matches(".manifesto .reveal")) { el.innerHTML = now; wrapWords(el); measureWords(); inkWords() }
+  toast("saving…");
+  await sendWiki({ sec: "text:" + el.dataset.key, text: now, name: ls("kotcoop-name") || "" });
+  toast("saved ✓"); sketchAll();
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape" && e.target.closest?.(".ed")) { e.target.closest(".ed").innerHTML = e.target.closest(".ed")._before; e.target.blur() } });
+function toast(t) {
+  let el = document.getElementById("toast");
+  if (!el) { el = document.createElement("div"); el.id = "toast"; document.body.append(el) }
+  el.textContent = t; el.classList.add("on"); clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove("on"), 1800);
+}
+
 // Member mode: the switch top right shows the pencils (log-in links come later)
 (function () {
   const btn = document.getElementById("mode");
-  const set = on => { document.body.classList.toggle("editing", on); btn.setAttribute("aria-pressed", on); ls("kotcoop-mode", on ? "1" : "0"); requestAnimationFrame(sketchAll) };
+  const set = on => { document.body.classList.toggle("editing", on); btn.setAttribute("aria-pressed", on); ls("kotcoop-mode", on ? "1" : "0"); refreshEditables(); requestAnimationFrame(sketchAll) };
   btn.onclick = () => set(!document.body.classList.contains("editing"));
   set(ls("kotcoop-mode") === "1");
 })();
@@ -1140,7 +1200,7 @@ function sketchAll() {
 }
 
 // ---- Manifesto: wrap every word so it can be inked in while scrolling ----
-(function () {
+function wrapWords(node) {
   const wrap = node => {
     [...node.childNodes].forEach(n => {
       if (n.nodeType === 3) {
@@ -1154,8 +1214,9 @@ function sketchAll() {
       } else if (n.nodeType === 1) wrap(n);
     });
   };
-  document.querySelectorAll(".manifesto .reveal").forEach(wrap);
-})();
+  wrap(node);
+}
+document.querySelectorAll(".manifesto .reveal").forEach(wrapWords);
 let words = [], hls = [];
 function measureWords() {
   words = [...document.querySelectorAll(".manifesto .w")].map(w => [w, w.getBoundingClientRect().top + scrollY]);
@@ -1285,6 +1346,7 @@ document.fonts && document.fonts.ready.then(redraw);
 
 if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
 drawMaps(); renderAgenda(); renderWiki(); decorateRows(); route(); redraw();
+loadWikiNotes().then(n => { applyTexts(n); refreshEditables(); redraw() });
 
 // menu dropdowns: only one open at a time, close when clicking elsewhere
 document.addEventListener("click", e => document.querySelectorAll("nav.tabs .dd[open]").forEach(dd => { if (!dd.contains(e.target)) dd.open = false }));
