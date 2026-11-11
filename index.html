@@ -2270,9 +2270,9 @@ async function renderMembers(fresh) {
   const gate = document.getElementById("gate");
   // the name box greets you on every visit (a visit = until the tab or app is closed)
   (function () {
-    const el = document.getElementById("intro"); let shown = null; try { shown = sessionStorage.getItem("kotcoop-intro") } catch (e) {}
+    const el = document.getElementById("intro"); let shown = null; try { shown = new URLSearchParams(location.search).has("nointro") ? "1" : null } catch (e) {}
     if (!el || shown) return; el.hidden = false; const gt = document.getElementById("gate"); if (gt) gt.style.visibility = "hidden";
-    const close = () => { try { sessionStorage.setItem("kotcoop-intro", "1") } catch (e) {} el.classList.add("out"); setTimeout(() => { el.hidden = true; const gt = document.getElementById("gate"); if (gt) gt.style.visibility = "" }, 600); removeEventListener("keydown", key) };
+    const close = () => { el.classList.add("out"); setTimeout(() => { el.hidden = true; const gt = document.getElementById("gate"); if (gt) gt.style.visibility = "" }, 600); removeEventListener("keydown", key) };
     const key = e => { if (e.key === "Escape" || e.key === "Enter") close() };
     el.addEventListener("click", e => { if (!e.target.closest(".iwin") || e.target.closest(".x, .go")) close() }); addEventListener("keydown", key);
   })();
