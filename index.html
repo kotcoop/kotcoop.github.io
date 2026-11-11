@@ -472,18 +472,32 @@ body.athome header.top { background: transparent; pointer-events: none } body.at
 .win { position: relative; aspect-ratio: 4 / 3.4; display: grid; place-items: center; text-decoration: none; color: var(--ink);
   background: linear-gradient(var(--ink), var(--ink)) center / 3px 100% no-repeat, linear-gradient(var(--ink), var(--ink)) center / 100% 3px no-repeat, color-mix(in srgb, var(--blue) 22%, var(--paper));
   width: var(--w, 100%); aspect-ratio: var(--ar, 4 / 3.4); align-self: end; justify-self: center; transform: translate(var(--dx, 0), var(--dy, 0)) rotate(var(--r, 0deg)); animation: winpop .5s calc(.9s + var(--i) * .06s) cubic-bezier(.3,1.6,.5,1) both; transition: background-color .2s }
-.win:nth-child(1) { --w: 78%; --ar: 4/3.9; --dx: -10px; --dy: 14px; --r: -1.6deg }
-.win:nth-child(2) { --w: 100%; --ar: 4/2.7; --dx: 6px; --dy: -16px; --r: 0.9deg }
-.win:nth-child(3) { --w: 66%; --ar: 3/4; --dx: 12px; --dy: 8px; --r: -0.8deg }
-.win:nth-child(4) { --w: 96%; --ar: 4/4.3; --dx: -4px; --dy: -10px; --r: 1.6deg }
-.win:nth-child(5) { --w: 84%; --ar: 4/3; --dx: 10px; --dy: 18px; --r: -1.2deg }
-.win:nth-child(6) { --w: 100%; --ar: 4/3.9; --dx: -12px; --dy: -6px; --r: 0.6deg }
-.win:nth-child(7) { --w: 82%; --ar: 3/3.6; --dx: 4px; --dy: 12px; --r: 1.3deg }
-.win:nth-child(8) { --w: 92%; --ar: 4/2.6; --dx: -6px; --dy: -14px; --r: -1.8deg }
-.win:nth-child(9) { --w: 100%; --ar: 4/4.4; --dx: 8px; --dy: 4px; --r: 0.8deg }
-.win:nth-child(10) { --w: 64%; --ar: 3/4.4; --dx: -8px; --dy: -12px; --r: -1deg }
-.win:nth-child(11) { --w: 100%; --ar: 4/2.8; --dx: 4px; --dy: 16px; --r: 1.5deg }
-.win:nth-child(12) { --w: 76%; --ar: 4/4.1; --dx: 14px; --dy: -8px; --r: -0.5deg }
+.win:nth-child(1) { --w: 92%; --ar: 4/3.1; --dx: -6px; --dy: 4px; --r: -1.4deg }
+.win:nth-child(2) { --w: 100%; --ar: 4/3.6; --dx: 3px; --dy: -6px; --r: 0.9deg }
+.win:nth-child(3) { --w: 86%; --ar: 4/3.3; --dx: 8px; --dy: 2px; --r: -0.6deg }
+.win:nth-child(4) { --w: 97%; --ar: 4/3.8; --dx: -2px; --dy: -3px; --r: 1.6deg }
+.win:nth-child(5) { --w: 88%; --ar: 4/3.2; --dx: 5px; --dy: 6px; --r: -1.1deg }
+.win:nth-child(6) { --w: 100%; --ar: 4/3.5; --dx: -7px; --dy: 0px; --r: 0.5deg }
+.win:nth-child(7) { --w: 95%; --ar: 4/3.4; --dx: 4px; --dy: -4px; --r: 1.2deg }
+.win:nth-child(8) { --w: 84%; --ar: 4/3.0; --dx: -3px; --dy: 5px; --r: -1.7deg }
+.win:nth-child(9) { --w: 100%; --ar: 4/3.7; --dx: 6px; --dy: -2px; --r: 0.7deg }
+.win:nth-child(10) { --w: 90%; --ar: 4/3.3; --dx: -5px; --dy: 3px; --r: -0.9deg }
+.win:nth-child(11) { --w: 98%; --ar: 4/3.1; --dx: 2px; --dy: -5px; --r: 1.5deg }
+.win:nth-child(12) { --w: 87%; --ar: 4/3.6; --dx: 7px; --dy: 1px; --r: -0.4deg }
+@media (min-width: 761px) {
+  .win:nth-child(1) { --w: 78%; --ar: 4/3.9; --dx: -10px; --dy: 14px; --r: -1.6deg }
+  .win:nth-child(2) { --w: 100%; --ar: 4/2.7; --dx: 6px; --dy: -16px; --r: 0.9deg }
+  .win:nth-child(3) { --w: 66%; --ar: 3/4; --dx: 12px; --dy: 8px; --r: -0.8deg }
+  .win:nth-child(4) { --w: 96%; --ar: 4/4.3; --dx: -4px; --dy: -10px; --r: 1.6deg }
+  .win:nth-child(5) { --w: 84%; --ar: 4/3; --dx: 10px; --dy: 18px; --r: -1.2deg }
+  .win:nth-child(6) { --w: 100%; --ar: 4/3.9; --dx: -12px; --dy: -6px; --r: 0.6deg }
+  .win:nth-child(7) { --w: 82%; --ar: 3/3.6; --dx: 4px; --dy: 12px; --r: 1.3deg }
+  .win:nth-child(8) { --w: 92%; --ar: 4/2.6; --dx: -6px; --dy: -14px; --r: -1.8deg }
+  .win:nth-child(9) { --w: 100%; --ar: 4/4.4; --dx: 8px; --dy: 4px; --r: 0.8deg }
+  .win:nth-child(10) { --w: 64%; --ar: 3/4.4; --dx: -8px; --dy: -12px; --r: -1deg }
+  .win:nth-child(11) { --w: 100%; --ar: 4/2.8; --dx: 4px; --dy: 16px; --r: 1.5deg }
+  .win:nth-child(12) { --w: 76%; --ar: 4/4.1; --dx: 14px; --dy: -8px; --r: -0.5deg }
+}
 .win { --pf: var(--paper); place-items: start center; padding-top: 9%; container-type: inline-size }
 .win .lbl { position: absolute; inset: 5%; width: 90%; height: 90%; overflow: visible; z-index: 1 }
 .win .lbl text { font-family: var(--display); font-weight: 900; font-stretch: 62%; fill: var(--blue); transition: fill .15s }
@@ -661,7 +675,7 @@ body.athome .facade { border-color: var(--paper) }
 }
 /* phone: swipe left and right along the street; ONDERDAK in the middle, the neighbours peek in at the edges */
 @media (max-width: 760px) {
-  .street { width: 100vw; margin: 0 0 0 calc(50% - 50vw); overflow-x: auto; overflow-y: visible; scroll-snap-type: x mandatory; scrollbar-width: none; gap: 0;
+  .street { width: 100vw; margin: 0 0 0 calc(50% - 50vw); overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scrollbar-width: none; gap: 0;
     padding: 70px 9vw 0; scroll-padding: 0 9vw; overscroll-behavior-x: contain; align-items: flex-end; justify-content: flex-start }
   .street::-webkit-scrollbar { display: none }
   .street > .bldg, .street > .refb { flex: 0 0 82vw; max-width: none; scroll-snap-align: center; border-bottom: 2.5px solid var(--paper); margin: 0 }
