@@ -418,6 +418,43 @@ nav.tabs a, nav.tabs .dd summary { display: flex; align-items: center; justify-c
 .note .arrow { font-size: 22px; line-height: 1 }
 .note:hover { color: #fff; background: var(--ink) }
 .note:active { background: var(--blue) }
+/* ---- Home: the building ONDERDAK ---- */
+body.athome nav.tabs { display: none }
+.mrow { grid-template-columns: minmax(0, 1fr) } .mrow .manifesto { max-width: 820px }
+#v-home { padding-block: 10px 30px }
+.bldg { width: min(640px, 100%); margin: 0 auto; position: relative }
+.roof { display: block; width: 113.3%; margin: 0 -6.65% -2px; overflow: visible }
+.roof path { fill: var(--paper); stroke: var(--ink); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round }
+.roof .rf { stroke-dasharray: 1; stroke-dashoffset: 1; animation: pen 1.4s .1s ease forwards }
+.roof .chim { opacity: 0; animation: fadein .4s 1.2s forwards }
+.roof text { font: 400 92px/1 var(--display); fill: var(--ink); letter-spacing: .08em; opacity: 0; animation: fadein .6s .9s forwards }
+@keyframes pen { to { stroke-dashoffset: 0 } }
+@keyframes fadein { to { opacity: 1 } }
+.facade { position: relative; padding: 6px clamp(14px, 4vw, 34px) 0; border: 2.5px solid var(--ink); border-top: 0; border-bottom: 0; background: var(--paper); border-radius: 0 0 1px 2px }
+.onder { font: 400 clamp(52px, 13vw, 104px)/.9 var(--display); color: var(--ink); text-align: center; letter-spacing: .06em; padding: 4px 0 18px; border-bottom: 1.5px solid var(--ink); margin: 0 calc(-1 * clamp(14px, 4vw, 34px)) 22px }
+.wins { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(12px, 3vw, 26px) clamp(14px, 4vw, 34px) }
+.win { position: relative; aspect-ratio: 4 / 3.4; display: grid; place-items: center; text-decoration: none; color: var(--ink);
+  background: linear-gradient(var(--ink), var(--ink)) center / 1.5px 100% no-repeat, linear-gradient(var(--ink), var(--ink)) center / 100% 1.5px no-repeat, color-mix(in srgb, var(--blue) 9%, var(--paper));
+  transform: rotate(calc((var(--i) * 37 % 5 - 2) * .4deg)); animation: winpop .5s calc(.9s + var(--i) * .06s) cubic-bezier(.3,1.6,.5,1) both; transition: background-color .2s }
+.win span { position: relative; z-index: 1; background: var(--paper); padding: 5px 7px; font: 500 clamp(10px, 1.6vw, 13px)/1.15 var(--mono); text-transform: uppercase; letter-spacing: .03em; text-align: center; max-width: 88%; transition: background .15s, color .15s }
+.win::after { content: ""; position: absolute; left: -6%; right: -6%; bottom: -7px; height: 5px; border: 1.5px solid var(--ink); background: var(--paper) }   /* sill */
+.win:hover { background: linear-gradient(#fff, #fff) center / 1.5px 100% no-repeat, linear-gradient(#fff, #fff) center / 100% 1.5px no-repeat, var(--ink) }
+.win:hover span { background: var(--ink); color: #fff }
+.win:active, .win[aria-current="page"] { background: linear-gradient(#fff, #fff) center / 1.5px 100% no-repeat, linear-gradient(#fff, #fff) center / 100% 1.5px no-repeat, var(--blue) }
+.win:active span { background: var(--blue); color: #fff }
+@keyframes winpop { from { opacity: 0; transform: scale(.6) } }
+.ground { display: flex; justify-content: center; margin-top: clamp(22px, 4vw, 36px) }
+.door { position: relative; width: clamp(110px, 24%, 150px); aspect-ratio: 1 / 1.55; display: flex; align-items: flex-end; justify-content: center; text-decoration: none;
+  background: repeating-linear-gradient(90deg, transparent 0 22px, color-mix(in srgb, var(--ink) 35%, transparent) 22px 23px), var(--paper); color: var(--ink); animation: winpop .5s 1.7s cubic-bezier(.3,1.6,.5,1) both; margin-bottom: -1.5px }
+.door::before { content: ""; position: absolute; right: 14px; top: 52%; width: 9px; height: 9px; border-radius: 50%; border: 1.5px solid var(--ink) }
+.door span { background: var(--paper); font: 500 11px/1.2 var(--mono); text-transform: uppercase; padding: 6px 8px; margin-bottom: 18px; text-align: center; position: relative; z-index: 1 }
+.door:hover { background: var(--ink) } .door:hover span { background: var(--ink); color: #fff } .door:hover::before { border-color: #fff }
+.door:active { background: var(--blue) } .door:active span { background: var(--blue); color: #fff }
+.earth { display: block; width: 150%; margin: -3px -25% 0; height: 16px; overflow: visible }
+.earth path { fill: none; stroke: var(--ink); stroke-width: 2.5; stroke-linecap: round }
+.hometag { grid-column: 1 / -1; width: 100%; max-width: none; text-align: center; font: 500 12px/1.5 var(--mono); text-transform: uppercase; color: var(--ink); margin: 26px 0 0 }
+@media (max-width: 760px) { .wins { grid-template-columns: repeat(3, 1fr) } .win span { padding: 3px 4px } .earth { width: 110%; margin: -3px -5% 0 } }
+@media (prefers-reduced-motion: reduce) { .win, .door, .roof text, .roof .chim { animation: none; opacity: 1 } .roof .rf { animation: none; stroke-dashoffset: 0 } }
 </style>
 </head>
 <body>
@@ -428,6 +465,7 @@ nav.tabs a, nav.tabs .dd summary { display: flex; align-items: center; justify-c
   <div class="wrap">
     <div class="modebar"><button type="button" id="lang" class="lang" aria-label="Language / Taal"><b data-l="en">EN</b>/<b data-l="nl">NL</b></button><button type="button" id="mode" class="mode" aria-pressed="false"><span class="sw" aria-hidden="true"></span>Member mode</button></div>
     <nav class="tabs" aria-label="Sections">
+      <a href="#home" class="homelink">⌂ Onderdak</a>
       <a href="#manifesto">Manifesto</a>
       <details class="dd" data-views="schedule food">
         <summary>Schedule</summary>
@@ -457,21 +495,34 @@ nav.tabs a, nav.tabs .dd summary { display: flex; align-items: center; justify-c
     <span class="lead">Become a member →</span>
     <label>Your name<input id="gate-name" name="name" maxlength="40" required placeholder="name"></label>
     <button class="btn" type="submit">Sign &amp; enter</button>
-    <a class="skip" href="#manifesto" id="gate-skip">just looking around</a>
+    <a class="skip" href="#home" id="gate-skip">just looking around</a>
   </form>
 </div>
 <main class="wrap">
 
+  <!-- HOME: the building ONDERDAK, the menu sits in its windows -->
+  <section class="view" id="v-home">
+    <div class="bldg">
+      <svg class="roof" viewBox="-40 0 680 230" aria-hidden="true"><path class="chim" d=""/><path class="rf" d=""/><text x="300" y="196" text-anchor="middle">DAK</text></svg>
+      <div class="facade">
+        <div class="onder" aria-label="Onderdak">ONDER</div>
+        <nav class="wins" aria-label="Menu"><a class="win" href="#manifesto" style="--i:0"><span>Manifesto</span></a><a class="win" href="#schedule" style="--i:1"><span>Schedule</span></a><a class="win" href="#food" style="--i:2"><span>Food</span></a><a class="win" href="#locations" style="--i:3"><span>Locations</span></a><a class="win" href="#forum" style="--i:4"><span>Forum</span></a><a class="win" href="#wiki" style="--i:5"><span>Wiki</span></a><a class="win" href="#members" style="--i:6"><span>Members</span></a><a class="win" href="#teams" style="--i:7"><span>2nd masters</span></a><a class="win" href="#governance" style="--i:8"><span>Governance</span></a><a class="win" href="#coopstatutes" style="--i:9"><span>Statutes</span></a><a class="win" href="#statutes" style="--i:10"><span>Jokerweek statutes</span></a><a class="win" href="#about" style="--i:11"><span>About us</span></a></nav>
+        <div class="ground"><a class="door" href="#membership"><span>Become a member</span></a></div>
+      </div>
+      <svg class="earth" viewBox="0 0 800 20" preserveAspectRatio="none" aria-hidden="true"><path d=""/></svg>
+    </div>
+    <p class="hometag">JOKER! · Jokerweek 2027&emsp;22.03 – 26.03&emsp;Engineering Architecture UGent</p>
+  </section>
+
   <!-- MANIFESTO -->
-  <section class="view" id="v-manifesto">
+  <section class="view" id="v-manifesto" hidden>
     <svg class="thread-line" aria-hidden="true"><path id="thread-path"/></svg>
     <div class="titlebox">
-      <div class="box"><h1>JOKER!</h1><span class="sub">Jokerweek 2027&emsp;&emsp;22.03 – 26.03&emsp;&emsp;Engineering Architecture UGent</span></div>
+      <div class="box"><h2>Manifesto</h2><span class="sub">Why we start a student housing cooperative</span></div>
       <a class="tex mapbox" href="#locations" aria-label="Map of Ghent: open locations"><span class="map" data-map="small"></span><span class="maptag">Locations →</span></a>
     </div>
     <div class="mrow">
     <article class="box manifesto">
-      <h2 class="mtitle">Manifesto</h2>
       <p class="lead reveal"><span class="hl">Ghent is a city shaped by its students.</span> Every year, thousands of young people come here to study, meet new people, discover themselves, and take their first steps towards independence.</p>
       <p class="reveal">For many, living in a student residence is an essential part of this experience. It is often their first home away from home, a place where friendships are formed and where they learn what it means to live independently.</p>
       <p class="reveal">Yet student housing is increasingly losing this potential. As <span class="hl">rents continue to rise</span>, finding an affordable room in Ghent is becoming more difficult. Student housing is increasingly treated as an investment opportunity, with the <span class="hl">financial interests of property owners</span> often <span class="hl">taking priority over the needs of students</span>. At the same time, students have little influence over the places they inhabit. Strict rental agreements and regulations leave <span class="hl">limited room for personalisation, creativity, or collective initiatives</span>. Although students spend an important part of their lives in these residences, they rarely have the opportunity to truly make them their own.</p>
@@ -481,16 +532,6 @@ nav.tabs a, nav.tabs .dd summary { display: flex; align-items: center; justify-c
       <p class="reveal">In a student housing cooperative, residents become members of an organisation in which they <span class="hl">have a meaningful voice</span>. They <span class="hl">participate in shaping</span> the way their residence functions and <span class="hl">share responsibility for its development</span>. Instead of simply following decisions made by an external property owner, students are encouraged to take part in the <span class="hl">management of their own living environment</span>.</p>
       <p class="reveal">The <span class="hl">financial structure</span> also works differently. The money residents contribute is primarily used to <span class="hl">cover the costs of the property</span>, <span class="hl">maintain and improve the building</span>, and ensure the <span class="hl">long-term continuity</span> of the cooperative. By prioritising these goals over private profit, the cooperative can work towards <span class="hl">keeping housing affordable over time</span>. This way we can stop following the trend of increasing rents.</p>
     </article>
-    <nav class="thread" id="thread" aria-label="Sections">
-      <div class="stop"><a class="dot" href="#schedule" style="--d:178px">Schedule</a></div>
-      <div class="stop"><a class="dot" href="#locations" style="--d:172px">Locations</a></div>
-      <div class="stop"><a class="dot" href="#forum" style="--d:150px">Forum</a><a class="note" href="https://chat.whatsapp.com/DfnlvwhWPfgKdy7ex9Crtb" target="_blank" rel="noopener"><span class="arrow">←</span> our WhatsApp community</a></div>
-      <div class="stop"><a class="dot" href="#wiki" style="--d:140px">Wiki</a></div>
-      <div class="stop"><a class="dot" href="#membership" style="--d:188px">Becoming a member</a></div>
-      <div class="stop"><a class="dot" href="#governance" style="--d:188px">Governance</a></div>
-      <div class="stop"><a class="dot" href="#coopstatutes" style="--d:165px">Statutes</a></div>
-      <div class="stop"><a class="dot" href="#food" style="--d:140px">Food</a></div>
-    </nav>
     </div>
   </section>
 
@@ -858,9 +899,10 @@ const WIKI = [
 ];
 
 // ---- Routing ----
-const VIEWS = ["about","coopstatutes","manifesto","schedule","membership","members","teams","governance","statutes","food","locations","wiki","forum"];
+const VIEWS = ["home","about","coopstatutes","manifesto","schedule","membership","members","teams","governance","statutes","food","locations","wiki","forum"];
 function route() {
-  const v = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : "manifesto";
+  const v = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : "home";
+  document.body.classList.toggle("athome", v === "home");
   VIEWS.forEach(n => document.getElementById("v-" + n).hidden = n !== v);
   document.querySelectorAll("nav.tabs a").forEach(a => {
     if (a.getAttribute("href") === "#" + v) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
@@ -1250,7 +1292,7 @@ function makePage(id, title, intro) {
   addPartForm(box, "New article", (t, b, n) => newRow(box, id, t, b, n), id);
   sec.querySelector(".delpage").onclick = async () => {
     if (!sec.querySelector(".delpage").dataset.sure) { sec.querySelector(".delpage").dataset.sure = 1; sec.querySelector(".delpage").textContent = "Sure? Click again to remove"; return }
-    removePage(id); location.hash = "#manifesto"; await sendWiki({ sec: "page:del", text: id, name: ls("kotcoop-name") || "" }); toast("page removed");
+    removePage(id); location.hash = "#home"; await sendWiki({ sec: "page:del", text: id, name: ls("kotcoop-name") || "" }); toast("page removed");
   };
   const a = document.createElement("a"); a.href = "#" + id; a.textContent = title; a.dataset.page = id;
   document.getElementById("addtab").before(a);
@@ -1291,7 +1333,7 @@ function applyPages(notes) {
 // ---- Red thread: one line from the top of the page, weaving behind the boxes, through every circle ----
 function drawThread() {
   const sec = document.getElementById("v-manifesto");
-  if (sec.hidden) return;
+  if (sec.hidden || !document.getElementById("thread")) return;
   const r0 = sec.getBoundingClientRect(), W = r0.width;
   const rel = el => { const r = el.getBoundingClientRect(); return { l: r.left - r0.left, r: r.right - r0.left, t: r.top - r0.top, b: r.bottom - r0.top } };
   const title = rel(sec.querySelector(".titlebox")), art = rel(sec.querySelector(".manifesto")), nav = rel(document.getElementById("thread"));
@@ -1377,7 +1419,7 @@ function wobblyCircle(d, r) {
   for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2, rad = c - 1.5 + r() * 3.2; pts.push([c + Math.cos(a) * rad, c + Math.sin(a) * rad]) }
   return smooth(pts, true);
 }
-const SK = ".box, .logo span, nav.tabs, .titlebox .tex, .stop .about";
+const SK = ".box, .win, .door, .logo span, nav.tabs, .titlebox .tex, .stop .about";
 function sketchAll() {
   document.querySelectorAll(SK).forEach((el, i) => {
     if (!el.offsetParent) return;
@@ -1543,6 +1585,15 @@ document.fonts && document.fonts.ready.then(redraw);
   document.querySelector(".paper-grid").style.backgroundImage = `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
 })();
 
+// ---- Home: draw the roof, chimney and ground of ONDERDAK with the same wavering pen ----
+(function () {
+  const r = rng(4242), wav = (a, b, n, amp) => { const pts = []; for (let i = 0; i <= n; i++) { const t = i / n, j = i && i < n ? r() * amp : 0; pts.push([a[0] + (b[0] - a[0]) * t + j, a[1] + (b[1] - a[1]) * t + j]) } return pts };
+  const roof = [...wav([-30, 222], [300, 24], 6, 3), ...wav([300, 24], [630, 222], 6, 3).slice(1)];
+  const rf = document.querySelector(".roof .rf"); rf.setAttribute("d", smooth(roof, false) + " L -30 222"); rf.setAttribute("pathLength", "1");
+  document.querySelector(".roof .chim").setAttribute("d", smooth([[452, 118], [452.6, 40], [508, 39.4], [508.5, 152]], false));
+  document.querySelector(".earth path").setAttribute("d", smooth(wav([0, 10], [800, 10], 10, 2.2), false));
+})();
+
 if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
 drawMaps(); renderAgenda(); renderWiki(); decorateRows(); route(); redraw();
 loadWikiNotes().then(n => { applyPages(n); applySchedule(n); applyTexts(n); syncPageTabs(); refreshEditables(); route(); redraw() });
@@ -1637,6 +1688,8 @@ function setLang(l) {
 }
 document.getElementById("lang").addEventListener("click", e => { const b = e.target.closest("b"); setLang(b ? b.dataset.l : LANG === "nl" ? "en" : "nl") });
 Object.assign(I18N.t, {"2nd masters": "2de masters", "Who does what · add your name to a team": "Wie doet wat · zet je naam bij een team", "Nobody yet": "Nog niemand", "+ Name": "+ Naam", "Your name": "Je naam", "= urban planning (stadsplanning)": "= stadsplanning", "blue": "blauw", "= added on the site": "= toegevoegd via de site", "Communication & lead": "Communicatie / leidingnemend", "Sort of chairs: general communication with the people in charge, the teams, the research seminar and the department; keep the overview; prepare the overall planning; deliver minutes; coordinate shift lists.": "Soort voorzitters: algemene communicatie met eindverantwoordelijken, teams, OS en vakgroep; overzicht behouden; algemene planning voorbereiden; verslagen bezorgen; coördinatie shiftenlijsten.", "Assignment": "Opdracht", "This is the team of the research seminar.": "Is team van het Onderzoeksseminarie.", "Meant for the seminar": "Bedoeld voor het seminarie", "Finance: treasury & sponsors": "Financiën: penning & sponsors", "Manage the budget; draw up the estimate; find sponsors (!); keep in touch with sponsors; work closely with DLK and ASAP from the start.": "Budget beheren; begroting opstellen; sponsors zoeken (!); communicatie met sponsors; nauwe samenwerking met DLK en ASAP te beginnen.", "Graphics": "Grafiek", "Poster; logo; posters; 2nd master uniform; meal cards; week planning etc.": "Affiche; logo; posters; uniform 2e MA; eetkaarten; weekplanning enz.", "Promo & social media": "Promo en sociale media", "Set the mood; socials; get people to take part; Ufora page; closely with Graphics & Website.": "Sfeer aanbrengen; socials, mensen engageren om deel te nemen; Uforapagina; in nauwe samenwerking met Grafiek & Website.", "Radio": "Radio", "Draw up the programme; list what is needed; with Light & Sound.": "Programma opstellen; lijst benodigdheden voorzien; ism Licht & Akoestiek.", "Cooking": "Koken", "Make the menu (lunch + dinner); sort out the kitchen; rent or borrow cooking and eating gear; maybe contact food trucks; later: draw up shift lists.": "Menu opstellen (lunch + avond); kook-accommodatie fixen; kook- en eetmateriaal huren/ontlenen; evt. foodtrucks contacteren; latere fase: shiftenlijsten opstellen.", "Side activities": "Randactiviteiten", "Think up (niche) activities that draw people to campus and support the theme (e.g. yoga, morning exercise, battle of the years); quiz.": "(Niche) activiteiten verzinnen die mensen naar de campus lokken en het hoofdthema ondersteunen (bv. yoga, ochtendgymnastiek, jarenstrijd); quiz.", "Location": "Locatie", "Find the location; with the department?; safety, permits & facilities.": "Locatie fixen; ism vakgroep?; veiligheid, vergunningen & accommodatie.", "The seminar?": "Seminarie?", "Decoration": "Inkleding", "Dress up all spaces (workspaces, party room, lecture hall); logistics (tables, chairs…); coordinate and lead the set-up (shifts?).": "Inkleden van alle ruimtes (werkplekken, feestruimte, zaal voor lezingen); logistiek fixen (tafels, stoelen…); opzet coördineren/aansturen (shiften?).", "Bar": "Bar", "Rent and provide bar counters, fridges, drinks, price list; a Jokerweek beer?; later: draw up shifts.": "Toog-elementen huren & voorzien, frigo's, drank, prijslijst fixen; jokerweekbier?; latere fase: shiften opstellen.", "Party": "Feest", "Arrange parties, DJs…; rent installations; closely with Light & Sound, Radio and the bar; closing party.": "Feestjes, DJ's… regelen; installaties huren; in nauwe samenwerking met Licht & Akoestiek, Radio, Barinstallatie; eindfeest.", "Photography": "Fotografie", "Photographers during the Jokerweek; with the digital team.": "Fotografen tijdens JW; ism Digitaal team.", "TV": "TV", "Put together the TV spots; Man Bites Dog meets Archies.": "TV-spotjes ineen steken; Man bijt hond meets Archies.", "Tip: have some ideas before jury week, that is the best moment to interview people!": "Tip: zorg dat je al voor de juryweek wat ideeën hebt, dan kan je best mensen interviewen!", "Light & sound": "Licht & akoestiek", "Light and sound; rent and connect installations; with Party, Radio and the student union for speakers; record the talks?": "Licht- en geluidstechniek; installaties huren & aansluiten; ism Feest, Radio en BV voor sprekers; opnames lezingen?", "Website": "Website", "Build the website, with Graphics & Promo.": "Website in elkaar steken, ism Grafiek & Promo."});
+Object.assign(I18N.t, {"Why we start a student housing cooperative": "Waarom we een studentenwooncoöperatie oprichten", "2nd masters": "2de masters", "Jokerweek statutes": "Jokerweekstatuten"});
+Object.assign(I18N.t, {"Become a member": "Word lid", "⌂ Onderdak": "⌂ Onderdak"});
 Object.assign(I18N.a, {"Your name": "Je naam"});
 setLang(LANG);
 
@@ -1709,7 +1762,7 @@ async function renderMembers(fresh) {
   document.getElementById("gate-skip").onclick = () => { seen.set(); gate.hidden = true };
   // "Enter JOKER!" on the members list opens the name box again, then leads into the site
   document.getElementById("members-enter").onclick = () => {
-    gate.dataset.next = "#manifesto"; gate.hidden = false;
+    gate.dataset.next = "#home"; gate.hidden = false;
     const f = document.getElementById("gate-name"); f.value = ""; f.focus(); sketchAll();
   };
   document.getElementById("gate-form").onsubmit = async e => {
@@ -1731,9 +1784,9 @@ async function renderMembers(fresh) {
 
 // ---- Motion: title letters, and "boiling" hand-drawn circles (redrawn a few times a second like animation) ----
 (function () {
-  const h1 = document.querySelector("#v-manifesto h1"), t = h1.textContent;
-  h1.setAttribute("aria-label", t);
-  h1.innerHTML = [...t].map((c, i) => `<span class="ch${c === "!" ? " bang" : ""}" style="--i:${i}" aria-hidden="true">${c}</span>`).join("");
+  const h1 = document.querySelector("#v-manifesto h1"), t = h1 ? h1.textContent : "";
+  if (h1) h1.setAttribute("aria-label", t);
+  if (h1) h1.innerHTML = [...t].map((c, i) => `<span class="ch${c === "!" ? " bang" : ""}" style="--i:${i}" aria-hidden="true">${c}</span>`).join("");
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   let frame = 0;
   setInterval(() => {
