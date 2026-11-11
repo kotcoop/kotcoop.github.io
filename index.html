@@ -503,23 +503,22 @@ body.athome .backhome { visibility: hidden }
 #menu { display: none } body.editing #menu { display: block; margin-top: 24px }
 .feast { position: relative; margin: 60px -1% 130px; aspect-ratio: 16 / 10; --pf: var(--paper) }
 .feast .top { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible }
-.feast .top path, .feast .top ellipse { fill: none; stroke: var(--ink); stroke-linecap: round; stroke-linejoin: round }
-.feast .top .floor { stroke-width: 1; opacity: .18 }
-.feast .top .wood { fill: color-mix(in srgb, var(--ink) 7%, var(--paper)); stroke-width: 2.8 }
-.feast .top .grain { stroke-width: 1.2; opacity: .4 }
-.feast .top .runner { fill: var(--paper); stroke-width: 2 }
-.feast .top .zig { stroke: var(--blue); stroke-width: 1.6 }
-.feast .top .crumb { stroke-width: 2; opacity: .7 }
+.feast .top * { vector-effect: non-scaling-stroke }
+.feast .top .ln { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round }
+.feast .top .lt { fill: none; stroke: var(--ink); stroke-width: .9; stroke-linecap: round; stroke-linejoin: round; opacity: .55 }
+.feast .top .bl { fill: none; stroke: var(--blue); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round }
+.feast .top .pf { fill: var(--paper) } .feast .top .dk { fill: var(--ink); stroke: none }
+.feast .top .cloth { fill: var(--paper); stroke: var(--ink); stroke-width: 1.2; opacity: 1 }
 .feast .it { position: absolute; left: var(--x); top: var(--y); width: var(--w); translate: -50% -50%; rotate: var(--r, 0deg) }
 .plate { aspect-ratio: 1; z-index: 1; display: grid; place-content: center; text-align: center; padding: 0; gap: 2px; isolation: isolate; min-height: 0; container-type: inline-size;
   animation: winpop .5s calc(.4s + var(--i) * .1s) cubic-bezier(.3,1.6,.5,1) both }
 .plate .ring { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; z-index: -1 }
 .plate .ring path { stroke: var(--ink); stroke-linecap: round; fill: none; vector-effect: non-scaling-stroke }
 .plate .ring .band { stroke: var(--blue); stroke-dasharray: 2 9 }
-.plate b { font: 900 clamp(15px, 1.7vw, 22px)/.9 var(--display); font-stretch: 62%; text-transform: uppercase; color: var(--blue) }
+.plate b { font: 900 clamp(15px, 1.6vw, 21px)/.9 var(--display); font-stretch: 62%; text-transform: uppercase; color: var(--blue) }
 .plate span { font: 400 clamp(9px, .8vw, 10.5px)/1.25 var(--mono); color: var(--text) }
 .plate .eve { color: var(--ink) }
-.plate > b, .plate > span { max-width: 70cqi; margin-inline: auto }
+.plate > b, .plate > span { max-width: 62cqi; margin-inline: auto }
 .feast .dish { z-index: 2; color: var(--ink); pointer-events: none; overflow: visible; --pf: var(--paper) }
 .feast .dish svg { width: 100%; height: auto; overflow: visible; display: block }
 .feast .sh { fill: none; stroke: var(--ink); stroke-width: 1.3; opacity: .5; stroke-linecap: round }
@@ -528,6 +527,7 @@ body.athome .backhome { visibility: hidden }
 .feast .who svg { width: 100%; height: auto; overflow: visible }
 .feast .arm { position: absolute; z-index: 4; left: var(--x); top: var(--y); width: var(--w); translate: -50% -100%; rotate: var(--a); transform-origin: 50% 100%;
   color: var(--ink); --pf: var(--paper); pointer-events: none; line-height: 0; animation: winpop .5s calc(.8s + var(--i) * .1s) both }
+.feast .arm svg .pf { fill: var(--paper) } .feast .arm svg .ln { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke } .feast .arm svg .lt { fill: none; stroke: var(--ink); stroke-width: .9; opacity: .55; stroke-linecap: round; vector-effect: non-scaling-stroke } .feast .arm svg .dk { fill: var(--ink) }
 .feast .arm svg { width: 100%; height: auto; overflow: visible; transform-origin: 50% 100%; animation: var(--an, hold) var(--du, 3s) calc(var(--i) * -.9s) ease-in-out infinite }
 @keyframes hold { 50% { translate: 0 -4px; rotate: -1.5deg } }
 @keyframes saw { 0%, 100% { translate: 0 0 } 50% { translate: 0 9px } }
@@ -1797,85 +1797,121 @@ function fitHome() {
 
 // ---- Food: lay the table. Each plate is a day; the text comes from the menu rows (members edit those) ----
 const FEAST_MQ = matchMedia("(max-width: 760px)");
+// Food: a table seen from above, drawn like an ink sketch. Layout in % of a wide screen; on a phone x and y swap.
+const FEAST = {
+  plates: [[13, 24], [13, 75], [50, 83], [87, 74], [87, 24]],          // Mon..Fri
+  hands: [ // shoulder x, y -> hand x, y, holding, motion, seconds, mirrored
+    [39, 110, 40, 86, "fork", "stab", 2.4, 1], [61, 110, 60, 86, "knife", "saw", .6, 0], [30, -8, 33, 27, "servers", "stir", 2.2, 0],
+    [74, -8, 67, 25, "slice", "reach", 4.4, 1], [-5, 52, 24, 57, "flat", "hold", 3.2, 0], [21, 110, 32, 60, "knife", "saw", .5, 0],
+    [105, 60, 71, 60, "olive", "dip", 3.6, 1], [105, 44, 79, 42, "glass", "reach", 5, 1]] };
+function feastPt(x, y, mob) { return mob ? [y, x] : [x, y] }
+function drawFeastArt(W, H, mob) {
+  const r = rng(91), k = mob ? W / 430 : W / 1000, P = (x, y) => { const [a, b] = feastPt(x, y, mob); return [a / 100 * W, b / 100 * H] };
+  const f = n => n.toFixed(1), J = j => r() * j * 2;
+  let out = "";
+  const path = (pts, closed, cls, j = 0) => { out += `<path class="${cls}" d="${smooth(pts.map(([x, y]) => [x + J(j), y + J(j)]), closed)}"/>` };
+  const ring = (cx, cy, R, n = 20, j = .03) => { const q = []; for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2; q.push([cx + Math.cos(a) * R * (1 + J(j)), cy + Math.sin(a) * R * (1 + J(j))]) } return q };
+  const oval = (cx, cy, rx, ry, rot = 0, n = 22, j = .03) => { const q = [], c = Math.cos(rot), s = Math.sin(rot); for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2, x = Math.cos(a) * rx * (1 + J(j)), y = Math.sin(a) * ry * (1 + J(j)); q.push([cx + x * c - y * s, cy + x * s + y * c]) } return q };
+  // a drawn round thing: paper fill, a line, and a second looser line over it
+  const disc = (cx, cy, R, fill = true) => { const q = ring(cx, cy, R); if (fill) path(q, true, "pf"); path(q, true, "ln"); path(ring(cx + 1, cy + .6, R * 1.01, 14, .04), true, "lt") };
+  const hatch = (cx, cy, R, ry = R, n = 16) => { let d = ""; for (let i = 0; i < n; i++) { const a = (-10 + i * 120 / (n - 1)) * Math.PI / 180, x = cx + (R + 2 * k) * Math.cos(a), y = cy + (ry + 2 * k) * Math.sin(a), L = (5 + (i % 3) * 3) * k; d += `M${f(x)} ${f(y)}l${f(L * .7)} ${f(-L * .7)}` } out += `<path class="lt" d="${d}"/>` };
+  const leaf = (x, y, len, rot, cls = "pf ln") => { const c = Math.cos(rot), s = Math.sin(rot), T = (u, v) => [x + u * c - v * s, y + u * s + v * c];
+    const a = T(0, 0), b = T(len, 0), m1 = T(len * .5, -len * .32), m2 = T(len * .5, len * .32);
+    out += `<path class="${cls}" d="M${f(a[0])} ${f(a[1])}Q${f(m1[0])} ${f(m1[1])} ${f(b[0])} ${f(b[1])}Q${f(m2[0])} ${f(m2[1])} ${f(a[0])} ${f(a[1])}Z"/><path class="lt" d="M${f(a[0])} ${f(a[1])}L${f(b[0])} ${f(b[1])}"/>` };
+  const dot = (x, y, R = 1.4) => { out += `<circle class="dk" cx="${f(x)}" cy="${f(y)}" r="${f(R * k)}"/>` };
+  const sprig = (x, y, len, rot) => { const c = Math.cos(rot), s = Math.sin(rot); path([[x, y], [x + c * len * .5 + J(3), y + s * len * .5 + J(3)], [x + c * len, y + s * len]], false, "ln");
+    for (let i = 1; i <= 4; i++) { const t = i / 5, px = x + c * len * t, py = y + s * len * t; leaf(px, py, len * .3, rot + (i % 2 ? -.9 : .9)) } };
+  const slice = (cx, cy, R) => { disc(cx, cy, R); path(ring(cx, cy, R * .78, 14), true, "lt"); for (let i = 0; i < 4; i++) { const a = i / 4 * Math.PI * 2 + .3; path([[cx, cy], [cx + Math.cos(a) * R * .7, cy + Math.sin(a) * R * .7]], false, "lt") } };
+
+  // the tablecloth: one loose line
+  const m = 6 * k; out += `<rect class="pf" x="${f(m)}" y="${f(m)}" width="${f(W - 2 * m)}" height="${f(H - 2 * m)}"/><path class="cloth" style="fill:none" transform="translate(${f(m)} ${f(m)})" d="${wobblyRect(W - 2 * m, H - 2 * m, r, 1.6, 6)}"/>`;
+  // plates with a blue rim, one per day
+  const PR = (mob ? .4 : .15) * W / 2;
+  FEAST.plates.forEach(([x, y]) => { const [cx, cy] = P(x, y); hatch(cx, cy, PR); disc(cx, cy, PR); path(ring(cx, cy, PR * .76, 18), true, "ln");
+    let d = ""; for (let i = 0; i < 30; i++) { const a = i / 30 * Math.PI * 2 + r() * .05, r1 = PR * .82, r2 = PR * .93; d += `M${f(cx + Math.cos(a) * r1)} ${f(cy + Math.sin(a) * r1)}L${f(cx + Math.cos(a + .06) * r2)} ${f(cy + Math.sin(a + .06) * r2)}` } out += `<path class="bl" d="${d}"/>`;
+    const [gx, gy] = [cx + PR * .95, cy - PR * .95]; hatch(gx, gy, 16 * k); disc(gx, gy, 16 * k); path(ring(gx, gy, 11 * k, 12), true, "lt"); path([[gx - 8 * k, gy - 4 * k], [gx - 4 * k, gy - 9 * k]], false, "ln") });
+  // salad bowl
+  { const [cx, cy] = P(33, 26), R = 62 * k; hatch(cx, cy, R); disc(cx, cy, R); path(ring(cx, cy, R * .86, 18), true, "lt");
+    for (let i = 0; i < 16; i++) { const a = r() * 6.3, d = R * .68 * Math.sqrt(r() + .5); leaf(cx + Math.cos(a) * d, cy + Math.sin(a) * d, (14 + r() * 10) * k, r() * 6.3) }
+    for (let i = 0; i < 4; i++) { const a = i * 1.6 + .4, d = R * .45; const x = cx + Math.cos(a) * d, y = cy + Math.sin(a) * d; disc(x, y, 7 * k); path([[x - 4 * k, y], [x + 4 * k, y]], false, "lt") }
+    for (let i = 0; i < 5; i++) { const a = r() * 6.3, d = R * .6 * (r() + .5); dot(cx + Math.cos(a) * d, cy + Math.sin(a) * d, 3.2) } }
+  // tart on a board
+  { const [cx, cy] = P(67, 24), R = 58 * k; hatch(cx, cy, R); disc(cx, cy, R);
+    let d = ""; for (let i = 0; i <= 36; i++) { const a = i / 36 * Math.PI * 2, rr = R * (.86 + (i % 2) * .05); d += (i ? "L" : "M") + f(cx + Math.cos(a) * rr) + " " + f(cy + Math.sin(a) * rr) } out += `<path class="ln" d="${d}Z"/>`;
+    for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2; path([[cx, cy], [cx + Math.cos(a) * R * .84, cy + Math.sin(a) * R * .84]], false, "lt"); const b = a + .4; path(ring(cx + Math.cos(b) * R * .55, cy + Math.sin(b) * R * .55, 6 * k, 10), true, "ln"); dot(cx + Math.cos(b + .2) * R * .3, cy + Math.sin(b + .2) * R * .3, 2) } }
+  // fish platter with lemons and herbs
+  { const [cx, cy] = P(50, 50), rx = (mob ? 70 : 130) * k, ry = (mob ? 130 : 72) * k, rot = 0; hatch(cx, cy, rx, ry, 20); path(oval(cx, cy, rx, ry, rot), true, "pf"); path(oval(cx, cy, rx, ry, rot), true, "ln"); path(oval(cx, cy, rx * .86, ry * .82, rot, 20), true, "lt");
+    for (let i = -1; i <= 1; i++) { const fx = cx + (mob ? i * rx * .45 : -rx * .15), fy = cy + (mob ? -ry * .1 : i * ry * .45), L = (mob ? 40 : 80) * k, h = 13 * k, v = mob;
+      const T = (u, w) => v ? [fx + w, fy + u] : [fx + u, fy + w];
+      path([T(-L / 2, 0), T(-L / 4, -h), T(L / 4, -h * .8), T(L / 2, 0), T(L / 4, h * .8), T(-L / 4, h)], true, "pf"); path([T(-L / 2, 0), T(-L / 4, -h), T(L / 4, -h * .8), T(L / 2, 0), T(L / 4, h * .8), T(-L / 4, h)], true, "ln");
+      path([T(L / 2, 0), T(L / 2 + 12 * k, -9 * k), T(L / 2 + 12 * k, 9 * k)], true, "ln"); const e = T(-L / 3, -3 * k); dot(e[0], e[1], 1.6); path([T(-L / 4.5, -h * .8), T(-L / 5, 0), T(-L / 4.5, h * .8)], false, "lt");
+      for (let q = 0; q < 4; q++) path([T(-L / 8 + q * L / 9, -h * .5), T(-L / 8 + q * L / 9 + 4 * k, 0)], false, "lt") }
+    const [lx, ly] = mob ? [cx, cy + ry * .62] : [cx + rx * .62, cy]; for (let i = 0; i < 3; i++) { const a = i * 2.1; const x = lx + Math.cos(a) * 12 * k, y = ly + Math.sin(a) * 12 * k; disc(x, y, 9 * k); path([[x - 6 * k, y], [x + 6 * k, y]], false, "lt"); path([[x, y - 6 * k], [x, y + 6 * k]], false, "lt") }
+    sprig(cx - rx * .5, cy + ry * .55, 34 * k, -.4) }
+  // bread board with a loaf and slices
+  { const [cx, cy] = P(29, 57), w = (mob ? 70 : 140) * k, h = (mob ? 130 : 70) * k; hatch(cx, cy, w / 2, h / 2, 18);
+    out += `<path class="pf ln" transform="translate(${f(cx - w / 2)} ${f(cy - h / 2)})" d="${wobblyRect(w, h, r, 1.4, 4)}"/>`;
+    const [hx, hy] = mob ? [cx, cy + h / 2 + 10 * k] : [cx + w / 2 + 10 * k, cy]; disc(hx, hy, 7 * k);
+    const lr = mob ? oval(cx, cy - h * .12, 18 * k, 40 * k) : oval(cx - w * .12, cy, 40 * k, 18 * k); path(lr, true, "pf"); path(lr, true, "ln");
+    for (let i = -1; i <= 1; i++) { const a = mob ? [[cx - 12 * k, cy - h * .12 + i * 18 * k], [cx + 12 * k, cy - h * .12 + i * 18 * k + 6 * k]] : [[cx - w * .12 + i * 18 * k, cy - 12 * k], [cx - w * .12 + i * 18 * k + 6 * k, cy + 12 * k]]; path(a, false, "ln") }
+    for (let i = 0; i < 3; i++) { const [sx, sy] = mob ? [cx + 4 * k * i, cy + h * .25 + i * 9 * k] : [cx + w * .25 + i * 9 * k, cy + 4 * k * i]; path(mob ? oval(sx, sy, 17 * k, 6 * k) : oval(sx, sy, 6 * k, 17 * k), true, "pf"); path(mob ? oval(sx, sy, 17 * k, 6 * k) : oval(sx, sy, 6 * k, 17 * k), true, "ln") }
+    for (let i = 0; i < 8; i++) dot(cx + J(w * .45), cy + J(h * .45), 1.2) }
+  // small bowls: olives, nuts, a dip
+  { let [cx, cy] = P(71, 60), R = 24 * k; hatch(cx, cy, R); disc(cx, cy, R); for (let i = 0; i < 6; i++) { const a = i * 1.05, d = R * .45; out += `<ellipse class="dk" cx="${f(cx + Math.cos(a) * d)}" cy="${f(cy + Math.sin(a) * d)}" rx="${f(5 * k)}" ry="${f(3.6 * k)}" transform="rotate(${(a * 57) | 0} ${f(cx + Math.cos(a) * d)} ${f(cy + Math.sin(a) * d)})"/>` }
+    [cx, cy] = P(61, 34); R = 19 * k; hatch(cx, cy, R); disc(cx, cy, R); for (let i = 0; i < 7; i++) path(ring(cx + J(R * .4), cy + J(R * .4), 4 * k, 8, .1), true, "ln");
+    [cx, cy] = P(39, 38); R = 19 * k; hatch(cx, cy, R); disc(cx, cy, R); let d = ""; for (let t = 0; t < 14; t++) { const a = t * .7, rr = R * .7 * (1 - t / 16); d += (t ? "L" : "M") + f(cx + Math.cos(a) * rr) + " " + f(cy + Math.sin(a) * rr) } path(d.slice(1).split("L").map(p => p.split(" ").map(Number)), false, "ln") }
+  // wine glasses, a bottle, lemon halves, cutlery, napkins
+  [[24, 42], [77, 42], [60, 72]].forEach(([x, y]) => { const [cx, cy] = P(x, y); hatch(cx, cy, 15 * k); disc(cx, cy, 15 * k); path(ring(cx + 4 * k, cy + 3 * k, 6 * k, 10), true, "lt"); path([[cx - 9 * k, cy - 3 * k], [cx - 5 * k, cy - 9 * k]], false, "ln") });
+  { const [cx, cy] = P(50, 19); hatch(cx, cy, 20 * k); out += `<circle class="dk" cx="${f(cx)}" cy="${f(cy)}" r="${f(20 * k)}"/>`; disc(cx, cy, 9 * k); path([[cx - 12 * k, cy - 8 * k], [cx - 5 * k, cy - 14 * k]], false, "pf") }
+  [[41, 70], [38, 12]].forEach(([x, y]) => { const [cx, cy] = P(x, y); hatch(cx, cy, 12 * k); disc(cx, cy, 12 * k); path(ring(cx, cy, 8 * k, 10), true, "lt"); for (let i = 0; i < 4; i++) { const a = i * .78; path([[cx - Math.cos(a) * 8 * k, cy - Math.sin(a) * 8 * k], [cx + Math.cos(a) * 8 * k, cy + Math.sin(a) * 8 * k]], false, "lt") } });
+  FEAST.plates.forEach(([x, y], i) => { const [cx, cy] = P(x, y), side = (mob ? 1 : 0); if (i === 2) return;
+    const fx = mob ? cx : cx - PR - 10 * k, fy = mob ? cy - PR - 10 * k : cy; const L = 46 * k;
+    path(mob ? [[fx - L / 2, fy], [fx + L / 2, fy]] : [[fx, fy - L / 2], [fx, fy + L / 2]], false, "ln");
+    const kx = mob ? cx : cx + PR + 10 * k, ky = mob ? cy + PR + 10 * k : cy; path(mob ? [[kx - L / 2, ky], [kx + L / 2, ky]] : [[kx, ky - L / 2], [kx, ky + L / 2]], false, "ln");
+    out += mob ? `<path class="ln" d="M${f(fx - L / 2)} ${f(fy - 4 * k)}h${f(10 * k)}M${f(fx - L / 2)} ${f(fy + 4 * k)}h${f(10 * k)}"/><path class="pf ln" d="M${f(kx - L / 2)} ${f(ky)}q${f(10 * k)} ${f(-6 * k)} ${f(22 * k)} 0z"/>`
+               : `<path class="ln" d="M${f(fx - 4 * k)} ${f(fy - L / 2)}v${f(10 * k)}M${f(fx + 4 * k)} ${f(fy - L / 2)}v${f(10 * k)}"/><path class="pf ln" d="M${f(kx)} ${f(ky - L / 2)}q${f(6 * k)} ${f(10 * k)} 0 ${f(22 * k)}z"/>` });
+  // herbs, crumbs and dots everywhere
+  const free = (x, y) => FEAST.plates.every(([px, py]) => { const [cx, cy] = P(px, py); return Math.hypot(x - cx, y - cy) > PR * 1.15 });
+  for (let i = 0, n = 0; i < 60 && n < 9; i++) { const [cx, cy] = P(8 + (r() + .5) * 84, 8 + (r() + .5) * 84); if (!free(cx, cy)) continue; n++; sprig(cx, cy, (20 + r() * 14) * k, r() * 6.3) }
+  for (let i = 0; i < 160; i++) { const x = W * (.03 + .94 * (r() + .5)), y = H * (.03 + .94 * (r() + .5)); if (free(x, y)) dot(x, y, .8 + r() * 1.2) }
+  return out;
+}
+// a hand from above with its arm: wrist at y 75, fingers up, shoulder at the bottom (y = V)
+function feastHand(what, V, flip) {
+  const sm = (q, z) => smooth(q, z);
+  const hand = [[35, 75], [33, 61], [26, 53], [20, 44], [21, 37], [26, 38], [32, 45], [36, 46], [35, 31], [35, 18], [38, 13], [41, 17], [42, 31], [43, 28], [44, 13], [46, 8], [49, 9], [50, 27], [51, 27], [53, 13], [56, 11], [58, 15], [57, 30], [59, 33], [62, 23], [65, 22], [66, 26], [64, 41], [63, 57], [62, 75]];
+  const curl = [[35, 75], [33, 61], [27, 54], [23, 46], [25, 40], [30, 42], [35, 46], [35, 36], [37, 30], [42, 31], [44, 27], [49, 27], [51, 28], [55, 27], [58, 31], [61, 33], [64, 37], [64, 45], [63, 57], [62, 75]];
+  const holds = what !== "flat" && what !== "glass" && what !== "slice";
+  const H = holds ? curl : hand, mid = 75 + (V - 75) * .42;
+  const under = {
+    fork: `<path class="ln" d="M47 120L46 -30M41 -52v18q5 7 10 0v-18M46 -52v18"/>`,
+    knife: `<path class="pf ln" d="M47 120L47 -10q8-20 4-46-6 14-6 46z"/>`,
+    servers: `<path class="ln" d="M42 110L36 -24M54 110L60 -24"/><path class="pf ln" d="M28 -40q8-8 16 0t-8 18q-8-8-8-18zM56 -42v14q5 6 10 0v-14M61 -42v14"/>`,
+    olive: "", flat: "", glass: `<circle class="pf ln" cx="47" cy="16" r="20"/><circle class="lt" cx="47" cy="16" r="14"/>`,
+    slice: `<path class="pf ln" d="M28 4l38 0-19-46z"/><path class="ln" d="M28 4q19 8 38 0"/><circle class="ln" cx="47" cy="-14" r="4"/>` }[what] || "";
+  const over = what === "olive" ? `<ellipse class="dk" cx="47" cy="27" rx="6" ry="5"/>` : "";
+  const g = `${under}<path class="pf" d="M34 75L33 ${V}H69L63 75Z"/>
+    <path class="ln" d="${sm([[35, 75], [34, mid * .6 + 30], [33, V]], false)}"/><path class="ln" d="${sm([[62, 75], [65, mid * .6 + 30], [68, V]], false)}"/>
+    <path class="pf ln" d="M31 ${mid}L29 ${V + 2}H72L69 ${mid}Q50 ${mid - 5} 31 ${mid}Z"/><path class="lt" d="M31 ${mid + 7}Q50 ${mid + 2} 69 ${mid + 7}"/>
+    <path class="pf ln" d="${sm(H, true)}"/><path class="lt" d="${sm(H.map(([x, y]) => [x + 1, y + .8]), true)}"/>
+    ${holds ? `<path class="lt" d="M38 36q4-3 8 0M46 32q4-3 8 0M54 34q4-3 7 1"/>` : `<path class="lt" d="M37 18q2-2 4 0M45 12q2-2 4 0M54 15q2-2 4 0M62 26q2-2 3 0M38 33h4M46 30h4M54 31h4"/>`}${over}`;
+  return `<svg viewBox="0 ${what === "fork" || what === "servers" || what === "slice" || what === "knife" ? -60 : 0} 100 ${V + (what === "fork" || what === "servers" || what === "slice" || what === "knife" ? 60 : 0)}"><g${flip ? ' transform="translate(100 0) scale(-1 1)"' : ""}>${g}</g></svg>`;
+}
 function renderFeast() {
   const f = document.getElementById("feast"); if (!f) return;
-  const mob = FEAST_MQ.matches, W0 = mob ? 340 : 1000, H0 = mob ? 748 : 625;
-  // the layout is drawn for a wide screen; on a phone the table turns upright (x and y swap)
-  const pt = (x, y) => mob ? [y, x] : [x, y];
-  const P = 'fill="var(--pf)" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"', S = 'fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"';
-  const shade = (cx, cy, rx, ry = rx, n = 11) => { let d = ""; for (let k = 0; k < n; k++) { const a = (5 + k * 95 / (n - 1)) * Math.PI / 180, x = cx + (rx + 3) * Math.cos(a), y = cy + (ry + 3) * Math.sin(a); d += `M${x.toFixed(1)} ${y.toFixed(1)}l${(5 + k % 3 * 2)} ${-(5 + k % 3 * 2)}` } return `<path class="sh" d="${d}"/>` };
-  const D = {
-    salad: `<svg viewBox="0 0 100 100">${shade(50, 50, 44)}<circle cx="50" cy="50" r="44" ${P}/><circle cx="50" cy="50" r="36" ${S} stroke-width="1.3" opacity=".6"/>
-      <path d="M30 40q8-12 18-2-10 10-18 2zM52 30q10-8 18 2-10 8-18-2zM58 56q12-4 16 8-12 4-16-8zM28 58q6-10 16-4-6 10-16 4zM44 66q8-6 12 4-8 6-12-4zM40 28q4-8 12-4-4 8-12 4z" ${P} stroke-width="1.6"/>
-      <path d="M30 40l18-2M52 30l18 2M58 56l16 8M28 58l16-4" ${S} stroke-width=".9"/><circle cx="46" cy="48" r="5" ${S} stroke-width="1.6"/><circle cx="64" cy="44" r="4" ${S} stroke-width="1.6"/><circle cx="38" cy="72" r="3" fill="currentColor"/><circle cx="62" cy="72" r="3" fill="currentColor"/><path d="M50 46l-2 4M66 42l-1 3" ${S} stroke-width="1"/></svg>`,
-    tart: `<svg viewBox="0 0 120 100">${shade(60, 50, 54, 44, 13)}<path d="M8 14q0-8 8-8h88q8 0 8 8v72q0 8-8 8H16q-8 0-8-8z" ${P}/><path d="M112 40h6v20h-6" ${S} stroke-width="2"/>
-      <circle cx="58" cy="50" r="36" ${P} stroke-width="2.2"/><path d="M58 50V14M58 50l25 25M58 50H22M58 50l25-25M58 50L33 75M58 50L33 25M58 50h36M58 50v36" ${S} stroke-width="1.2"/>
-      <circle cx="46" cy="32" r="4" ${S} stroke-width="1.4"/><circle cx="72" cy="36" r="4" ${S} stroke-width="1.4"/><circle cx="70" cy="66" r="4" ${S} stroke-width="1.4"/><circle cx="42" cy="62" r="4" ${S} stroke-width="1.4"/><path d="M52 22l2 2M80 54l2 2M36 46l2 2M60 78l2 2" ${S} stroke-width="2"/></svg>`,
-    bread: `<svg viewBox="0 0 160 90">${shade(80, 45, 74, 34, 14)}<path d="M8 22q0-10 10-10h116q10 0 10 10v10h8q6 0 6 10t-6 10h-8v16q0 10-10 10H18q-10 0-10-10z" ${P}/><circle cx="152" cy="42" r="3" ${S} stroke-width="1.4"/>
-      <path d="M22 38q0-14 52-14t52 14-52 16-52-16z" ${P} stroke-width="2.2"/><path d="M42 30l8 16M60 26l8 20M80 26l8 20M100 30l6 14" ${S} stroke-width="1.6"/><path d="M40 60l2 1M70 58l2 2M96 70l2 1" ${S} stroke-width="2.2"/></svg>`,
-    olives: `<svg viewBox="0 0 60 60">${shade(30, 30, 26, 26, 8)}<circle cx="30" cy="30" r="26" ${P}/><circle cx="30" cy="30" r="19" ${S} stroke-width="1.1" opacity=".6"/><circle cx="24" cy="26" r="5" fill="currentColor"/><circle cx="36" cy="28" r="5" fill="currentColor"/><circle cx="29" cy="38" r="5" fill="currentColor"/></svg>`,
-    figs: `<svg viewBox="0 0 90 60">${shade(45, 30, 40, 24, 10)}<path d="M8 8h74l-4 46H12z" ${P}/><circle cx="30" cy="26" r="9" ${P} stroke-width="1.8"/><circle cx="56" cy="34" r="9" ${P} stroke-width="1.8"/><path d="M30 20v12M24 26h12M56 28v12M50 34h12" ${S} stroke-width="1"/><path d="M60 16q8-4 14 2-6 6-14-2z" ${P} stroke-width="1.6"/></svg>`,
-    bottle: `<svg viewBox="0 0 50 50">${shade(25, 25, 19, 19, 8)}<circle cx="25" cy="25" r="19" fill="currentColor"/><circle cx="25" cy="25" r="9" ${P} stroke-width="2"/><path d="M14 16q4-6 10-6" fill="none" stroke="var(--paper)" stroke-width="2" stroke-linecap="round" opacity=".7"/></svg>`,
-    napkin: `<svg viewBox="0 0 50 50"><path d="M6 44L44 6v38z" ${P} stroke-width="2"/><path d="M14 44L44 14M22 44L44 22M30 44L44 30" ${S} stroke-width="1" opacity=".5"/></svg>`,
-    salt: `<svg viewBox="0 0 60 40">${shade(16, 20, 11, 11, 6)}<circle cx="16" cy="20" r="11" ${P}/><path d="M12 18h1M18 16h1M16 23h1" ${S} stroke-width="2.2"/>${shade(44, 20, 11, 11, 6)}<circle cx="44" cy="20" r="11" ${P}/><circle cx="44" cy="20" r="5" fill="currentColor"/></svg>`,
-    candle: `<svg viewBox="0 0 50 50">${shade(25, 25, 18, 18, 7)}<circle cx="25" cy="25" r="18" ${P}/><circle cx="25" cy="25" r="9" ${P}/><path d="M25 25q-7-10 0-22 7 12 0 22z" ${P} stroke-width="1.6"/></svg>` };
-  // people seen from above (head + shoulders), facing up = the table is above them
-  const hair = {
-    long: `<path d="M48 50C44 22 96 22 92 50c4 18 2 34 6 46-8 2-14-6-16-14-6 4-18 4-24 0-2 8-8 16-16 14 4-12 2-28 6-46z" ${P}/><path d="M70 27v24M60 30q-4 20-6 50M80 30q4 20 6 50M54 40q-4 20-2 46M86 40q4 20 2 46" ${S} stroke-width="1.2"/>`,
-    curly: (() => { let d = ""; for (let k = 0; k < 16; k++) { const a = k / 16 * Math.PI * 2, x = 70 + 22 * Math.cos(a), y = 50 + 22 * Math.sin(a); d += `M${(x + 6).toFixed(1)} ${y.toFixed(1)}a6 6 0 1 0 -12 0a6 6 0 1 0 12 0` } return `<circle cx="70" cy="50" r="24" fill="currentColor"/><path d="${d}" ${P} stroke-width="1.8"/><path d="M62 44a5 5 0 1 0 8 4M74 52a5 5 0 1 0 6-6M64 58a4 4 0 1 0 6 2" ${S} stroke-width="1.6"/>` })(),
-    short: `<circle cx="70" cy="50" r="23" ${P}/><path d="M70 50l-14-10M70 50l-4-17M70 50l8-16M70 50l16-8M70 50l18 6M70 50l10 16M70 50l-6 18M70 50l-18 8M70 50l-18-4" ${S} stroke-width="1.2"/><path d="M48 46q-4 6 0 12M92 46q4 6 0 12" ${S} stroke-width="1.6"/>`,
-    bun: `<circle cx="70" cy="48" r="23" ${P}/><path d="M70 26q-8 10-6 22M70 26q8 10 6 22M58 32q-4 8-4 16M82 32q4 8 4 16" ${S} stroke-width="1.2"/><circle cx="70" cy="70" r="9" ${P}/><path d="M64 68q6-4 12 2" ${S} stroke-width="1.2"/>`,
-    cap: `<circle cx="70" cy="50" r="23" ${P}/><path d="M50 40q20-16 40 0" ${S} stroke-width="1.4"/><path d="M52 34q18-12 36 0l2-8q-20-10-40 0z" ${P} stroke-width="2"/><path d="M60 52l20-6M58 60l24-6" ${S} stroke-width="1.1" opacity=".6"/>` };
-  const top = {
-    stripes: `<path d="M14 92q56-18 112 0M10 104q60-18 120 0M9 116q61-18 122 0" fill="none" stroke="var(--blue)" stroke-width="3.4" stroke-linecap="round"/>`,
-    knit: `<path d="M24 92l6-6M36 88l6-6M100 88l6-6M112 92l6-6M18 106l6-6M30 102l6-6M106 102l6-6M118 106l6-6M26 116l6-6M114 116l6-6" ${S} stroke-width="1.2"/><path d="M52 70q18 8 36 0" ${S} stroke-width="1.6"/>`,
-    dots: `<path d="M24 96v1M40 88v1M100 88v1M116 96v1M30 110v1M50 104v1M90 104v1M110 110v1M20 116v1M120 116v1" ${S} stroke-width="3"/>`,
-    collar: `<path d="M52 68l18 12 18-12" ${S} stroke-width="2"/><path d="M40 84l-6 32M100 84l6 32" ${S} stroke-width="1.2" opacity=".6"/>`,
-    hatch: `<path d="M20 112l20-20M30 116l26-26M84 116l26-26M98 116l22-22M110 116l14-14" ${S} stroke-width="1.1" opacity=".55"/>` };
-  const person = (h, t) => `<svg viewBox="0 0 140 120"><path d="M8 124C8 84 30 68 70 68s62 16 62 56z" ${P}/>${top[t]}${hair[h]}</svg>`;
-  // arms: a thick pen line with a paper core, so arm, palm and fingers melt into one outline; long enough to reach their target
-  const FING = { open: ["M40 92Q37 78 35 64", "M47 88Q46 72 46 58", "M54 88Q56 72 57 60", "M61 93Q64 82 67 72"], hold: ["M39 94Q36 84 42 80", "M46 90Q45 80 51 79", "M54 90Q55 81 60 81", "M61 95Q64 88 67 88"] };
-  const THUMB = { open: "M38 110Q28 104 24 92", hold: "M37 108Q32 96 40 90" };
-  const HOLD = {
-    fork: { pose: "hold", under: `<path d="M50 104V22M43 2v14q7 8 14 0V2M50 2v16" ${S} stroke-width="3"/>` },
-    knife: { pose: "hold", under: `<path d="M50 104V36" ${S} stroke-width="3.6"/><path d="M50 38V2q9 9 6 36z" ${P} stroke-width="2.2"/>` },
-    tongs: { pose: "hold", under: `<path d="M46 104L38 8q-2-6 4-6M54 104L62 8q2-6-4-6" ${S} stroke-width="3"/><path d="M38 8q4 4 8 0M62 8q-4 4-8 0" ${S} stroke-width="2"/>` },
-    spoon: { pose: "hold", under: `<path d="M50 104V36" ${S} stroke-width="3.4"/><path d="M41 22q0-14 9-14t9 14-9 14-9-14z" ${P} stroke-width="2.2"/>` },
-    glass: { pose: "hold", over: `<circle cx="50" cy="72" r="16" ${P}/><circle cx="50" cy="72" r="10" ${S} stroke-width="1.3" opacity=".6"/><path d="M44 68q3-3 7-3" ${S} stroke-width="1.4"/>` },
-    bread: { pose: "hold", over: `<path d="M34 76q0-14 16-14t16 14-16 12-16-12z" ${P} stroke-width="2.2"/><path d="M42 70l4 8M52 68l4 9" ${S} stroke-width="1.4"/>` },
-    olive: { pose: "hold", over: `<circle cx="52" cy="76" r="6" fill="currentColor"/>` },
-    none: { pose: "open" } };
-  const arm = (what, V) => { const h = HOLD[what] || HOLD.none, F = FING[h.pose], lines = [`M50 ${V}C49 ${V * .7 + 30} 48 ${V * .4 + 70} 50 126`, "M50 122L50 102", ...F, THUMB[h.pose]], w = [22, 28, 8, 8, 8, 8, 9];
-    const pass = (col, add) => lines.map((d, k) => `<path d="${d}" fill="none" stroke="${col}" stroke-width="${w[k] + add}" stroke-linecap="round" stroke-linejoin="round"/>`).join("");
-    return `<svg viewBox="0 0 100 ${V}">${h.under || ""}${pass("currentColor", 5)}${pass("var(--paper)", 0)}
-      <path d="M41 108q9 4 18 0M45 132q5 2 10 0" ${S} stroke-width="1.2" opacity=".6"/>${h.pose === "hold" ? `<path d="M42 86q3-4 7-4M50 85q3-4 7-3M58 87q3-3 6-2" ${S} stroke-width="1.2"/>` : ""}${h.over || ""}</svg>` };
+  const mob = FEAST_MQ.matches, W0 = mob ? 340 : 1000, H0 = mob ? 748 : 625, PW = mob ? 40 : 15, AW = mob ? 22 : 12;
   const rows = [...document.querySelectorAll("#menu > .row")];
   const day = r => r.querySelector(".k").textContent.trim(), meals = r => [...r.querySelectorAll("div > p")].map(p => p.innerHTML.trim()).filter(Boolean);
-  const PW = mob ? 41 : 17, WW = mob ? 30 : 16, AW = mob ? 12 : 6, DK = mob ? 2.4 : 1;
-  // five people, one per day: [head x, y, facing (deg), hair, top, plate x, y]
-  const PEOPLE = [[4, 50, 90, "long", "knit", 18, 50], [36, 9, 180, "short", "collar", 36, 30], [66, 9, 180, "bun", "stripes", 66, 30], [36, 91, 0, "curly", "hatch", 36, 70], [66, 91, 0, "cap", "dots", 66, 70]];
-  // what each pair of hands is doing: [person, which shoulder, target x, y, holding, motion, seconds]
-  const ACT = [[0, -1, 12, 41, "fork", "stab", 2.4], [0, 1, 29, 62, "olive", "dip", 3.6], [1, -1, 44, 25, "knife", "saw", .6], [1, 1, 26, 19, "glass", "hold", 3],
-    [2, 1, 52, 49, "tongs", "stir", 2.2], [2, -1, 58, 23, "fork", "stab", 2.8], [3, 1, 49, 64, "bread", "reach", 4.4], [3, -1, 28, 77, "none", "hold", 3.4],
-    [4, 1, 79, 49, "knife", "saw", .5], [4, -1, 57, 79, "glass", "reach", 5]];
-  const DI = [["salad", 51, 50, 10, 0], ["tart", 80, 50, 11, 0], ["bread", 89, 28, 9, 84], ["olives", 29, 62, 4, 0], ["figs", 50, 66, 5.5, -8], ["bottle", 51, 26, 3.4, 0], ["salt", 22, 23, 4.4, 20],
-    ["candle", 51, 78, 3.2, 0], ["candle", 89, 68, 3.2, 0], ["napkin", 25, 38, 3, 10], ["napkin", 76, 24, 3, -80], ["napkin", 57, 81, 3, 30], ["napkin", 46, 20, 3, 140]];
-  const rad = d => d * Math.PI / 180;
-  const whoHTML = PEOPLE.map(([x, y, r, h, t], i) => { const [X, Y] = pt(x, y), R = mob ? Math.atan2(-Math.cos(rad(r)), -Math.sin(rad(r))) * 180 / Math.PI : r;
-    return `<i class="who" aria-hidden="true" style="--x:${X}%;--y:${Y}%;--w:${WW}%;--r:${R}deg;--i:${i}">${person(h, t)}</i>` });
-  const armHTML = ACT.map(([pi, side, tx, ty, what, an, du], i) => {
-    const [x, y, r] = PEOPLE[pi], [X, Y] = pt(x, y), R = rad(mob ? Math.atan2(-Math.cos(rad(r)), -Math.sin(rad(r))) * 180 / Math.PI : r);
-    const u = WW / 100 * W0 / 140, lx = side * 40 * (mob ? -1 : 1) * u, ly = 30 * u;   // shoulder, in px, relative to the head
-    const sx = X / 100 * W0 + lx * Math.cos(R) - ly * Math.sin(R), sy = Y / 100 * H0 + lx * Math.sin(R) + ly * Math.cos(R);
-    const [TX, TY] = pt(tx, ty), dx = TX / 100 * W0 - sx, dy = TY / 100 * H0 - sy, dist = Math.hypot(dx, dy), aw = AW / 100 * W0;
-    const V = Math.max(150, Math.round(95 + dist * 100 / aw)), a = Math.atan2(dx, -dy) * 180 / Math.PI;
-    return `<i class="arm" aria-hidden="true" style="--x:${(sx / W0 * 100).toFixed(2)}%;--y:${(sy / H0 * 100).toFixed(2)}%;--w:${AW}%;--a:${a.toFixed(1)}deg;--an:${an};--du:${du}s;--i:${i}">${arm(what, V)}</i>` });
+  const arms = FEAST.hands.map(([sx0, sy0, tx0, ty0, what, an, du, flip], i) => {
+    const [sx, sy] = feastPt(sx0, sy0, mob), [tx, ty] = feastPt(tx0, ty0, mob);
+    const dx = (tx - sx) / 100 * W0, dy = (ty - sy) / 100 * H0, dist = Math.hypot(dx, dy), u = AW / 100 * W0 / 100;
+    const V = Math.round(Math.max(140, 40 + dist / u)), a = Math.atan2(dx, -dy) * 180 / Math.PI;
+    const ext = ["fork", "servers", "slice", "knife"].includes(what) ? 60 : 0;
+    return `<i class="arm" aria-hidden="true" style="--x:${sx}%;--y:${sy}%;--w:${AW}%;--a:${a.toFixed(1)}deg;--an:${an};--du:${du}s;--i:${i}">${feastHand(what, V, flip)}</i>` });
   f.innerHTML = `<svg class="top" aria-hidden="true"></svg>
-    ${DI.map(([k, x, y, w, r]) => { const [X, Y] = pt(x, y); return `<i class="it dish" aria-hidden="true" style="--x:${X}%;--y:${Y}%;--w:${w * DK}%;--r:${mob ? r + 90 : r}deg">${D[k]}</i>` }).join("")}
-    ${rows.map((r, i) => { let [X, Y] = pt(PEOPLE[i % 5][5], PEOPLE[i % 5][6]); if (mob) X = 50 + (X - 50) * 1.15;
-      return `<div class="it plate" style="--i:${i};--x:${X}%;--y:${Y}%;--w:${PW}%;--r:${[-4, 3, -1, -3, 4][i % 5]}deg"><svg class="ring" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
-        <b>${day(r)}</b>${meals(r).map((m, j) => `<span class="${j ? "eve" : ""}">${m}</span>`).join("")}</div>` }).join("")}
-    ${armHTML.join("")}${whoHTML.join("")}`;
+    ${rows.map((r, i) => { const [X, Y] = feastPt(...FEAST.plates[i % 5], mob);
+      return `<div class="it plate" style="--i:${i};--x:${X}%;--y:${Y}%;--w:${PW}%;--r:${[-4, 3, -1, -3, 4][i % 5]}deg"><b>${day(r)}</b>${meals(r).map((m, j) => `<span class="${j ? "eve" : ""}">${m}</span>`).join("")}</div>` }).join("")}
+    ${arms.join("")}`;
 }
 if (!window._feastMQ) { window._feastMQ = 1; FEAST_MQ.addEventListener("change", () => { renderFeast(); const t = document.querySelector("#feast .top"); if (t) t._fk = ""; frameViews() }) }
 
@@ -1935,28 +1971,8 @@ function frameViews() {
   if (tb && tb.width) {
     const W = Math.round(tb.width), H = Math.round(tb.height), key = W + "x" + H;
     if (top._fk !== key) {
-      top._fk = key; top.setAttribute("viewBox", `0 0 ${W} ${H}`); const r = rng(77), mob = FEAST_MQ.matches;
-      const T = mob ? [.14, .08, .86, .92] : [.08, .14, .92, .86];               // table: left, top, right, bottom
-      const [x0, y0, x1, y1] = [T[0] * W, T[1] * H, T[2] * W, T[3] * H], tw = x1 - x0, th = y1 - y0;
-      let floor = ""; for (let k = -2; k < 30; k++) { const v = k * (mob ? 34 : 44); floor += mob ? `M${-40} ${v}L${W + 40} ${v + r() * 4}` : `M${v} ${-40}L${v + r() * 4} ${H + 40}` }
-      let grain = ""; const n = 9;
-      for (let k = 1; k < n; k++) { const q = []; for (let u = 0; u <= 8; u++) { const t = u / 8; q.push(mob ? [x0 + tw * k / n + r() * 5, y0 + th * t] : [x0 + tw * t, y0 + th * k / n + r() * 5]) } grain += smooth(q, false) }
-      for (let k = 0; k < 4; k++) { const cx = x0 + tw * (.15 + .7 * (r() + .5)), cy = y0 + th * (.15 + .7 * (r() + .5)); grain += `M${cx - 9} ${cy}a9 4 ${mob ? 90 : 0} 1 0 18 0a9 4 ${mob ? 90 : 0} 1 0-18 0` }
-      // the runner down the middle, with a zigzag weave and pointed ends
-      const rw = mob ? .11 * W : .11 * H, c = mob ? (x0 + x1) / 2 : (y0 + y1) / 2, s0 = mob ? y0 + th * .1 : x0 + tw * .14, s1 = mob ? y1 - th * .02 : x1 - tw * .02;
-      const P = (a, b) => mob ? `${b} ${a}` : `${a} ${b}`;
-      const run = `M${P(s0, c)}L${P(s0 + rw * .6, c - rw / 2)}L${P(s1 - rw * .6, c - rw / 2)}L${P(s1, c)}L${P(s1 - rw * .6, c + rw / 2)}L${P(s0 + rw * .6, c + rw / 2)}Z`;
-      let zig = ""; for (let row = -1; row <= 1; row++) { let d = `M${P(s0 + rw * .7, c + row * rw * .28)}`; for (let v = s0 + rw * .7, k = 0; v < s1 - rw * .7; v += rw * .22, k++) d += `L${P(v, c + row * rw * .28 + (k % 2 ? -1 : 1) * rw * .1)}`; zig += d }
-      let crumbs = ""; for (let k = 0; k < 40; k++) { const x = x0 + tw * (.04 + .92 * (r() + .5)), y = y0 + th * (.04 + .92 * (r() + .5)), an = r() * 6; crumbs += `M${x.toFixed(1)} ${y.toFixed(1)}l${(Math.cos(an) * 3).toFixed(1)} ${(Math.sin(an) * 3).toFixed(1)}` }
-      top.innerHTML = `<path class="floor" d="${floor}"/><path class="wood" transform="translate(${x0} ${y0})" d="${wobblyRect(tw, th, r, 2.2, 6)}"/>` +
-        `<path class="grain" d="${grain}"/><path class="wood" style="fill:none;stroke-width:1.2;opacity:.5" transform="translate(${x0 + 2} ${y0 + 1.5})" d="${wobblyRect(tw, th, r, 2.2, 6)}"/>` +
-        `<path class="runner" d="${run}"/><path class="zig" d="${zig}"/><path class="crumb" d="${crumbs}"/>`;
+      top._fk = key; top.setAttribute("viewBox", `0 0 ${W} ${H}`); top.innerHTML = drawFeastArt(W, H, FEAST_MQ.matches);
     }
-    document.querySelectorAll("#feast .plate .ring:not(.drawn)").forEach((g, i) => {
-      g.classList.add("drawn"); const r = rng(i * 19 + 5);
-      g.innerHTML = `<path class="sh" transform="translate(5 5)" d="${wobblyCircle(100, r)}" style="stroke-dasharray:3 6;stroke-width:6;opacity:.35"/><path d="${wobblyCircle(100, r)}" style="fill:var(--paper);stroke-width:3"/><path class="band" transform="translate(5 5) scale(.9)" d="${wobblyCircle(100, r)}" style="stroke-width:5"/><path transform="translate(9 9) scale(.82)" d="${wobblyCircle(100, r)}" style="stroke-width:2"/><path transform="translate(2 1)" d="${wobblyCircle(98, r)}" style="stroke-width:1.2;opacity:.5"/>`;
-    });
-    document.querySelectorAll("#feast .dish svg, #feast .who svg").forEach(doubleLine);
   }
 }
 
