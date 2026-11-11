@@ -420,9 +420,11 @@ nav.tabs a, nav.tabs .dd summary { display: flex; align-items: center; justify-c
 .note:active { background: var(--blue) }
 /* ---- Home: the building ONDERDAK ---- */
 body:not(.editing) nav.tabs, body.athome nav.tabs { display: none }
-.backhome { display: inline-flex; align-items: center; gap: 8px; margin-right: auto; font: 500 12px/1 var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--ink); background: var(--paper); padding: 9px 12px 8px; text-decoration: none; border: 2px solid var(--paper); transition: background .15s, color .15s }
-.backhome svg { width: 18px; height: 18px }
-.backhome:hover { background: var(--ink); color: #fff; border-color: var(--paper) } .backhome:active { background: var(--blue); color: #fff }
+.backhome { display: inline-flex; align-items: center; gap: 10px; margin-right: auto; font: 900 clamp(18px, 2.2vw, 26px)/1 var(--display); font-stretch: 62%; text-transform: uppercase; letter-spacing: .02em; color: var(--ink); background: var(--paper); padding: 10px 18px 9px 12px; text-decoration: none; border: 3px solid var(--ink); outline: 3px solid var(--paper); box-shadow: 6px 6px 0 var(--blue); rotate: -3deg; transition: background .15s, color .15s, rotate .25s; animation: nudge 2.6s 1.2s ease-in-out infinite }
+.backhome svg { width: 30px; height: 30px }
+.backhome:hover { background: var(--ink); color: #fff; rotate: 0deg; animation: none }
+@keyframes nudge { 0%, 80%, 100% { translate: 0 0 } 86% { translate: -6px 0 } 92% { translate: 0 0 } 96% { translate: -3px 0 } }
+@media (prefers-reduced-motion: reduce) { .backhome { animation: none } } .backhome:active { background: var(--blue); color: #fff }
 body.athome .backhome { visibility: hidden }
 .modebar { align-items: center }
 .mrow { grid-template-columns: minmax(0, 1fr) } .mrow .manifesto { max-width: 820px }
@@ -496,14 +498,20 @@ body.athome .backhome { visibility: hidden }
 /* Food: the table from above */
 #menu { display: none } body.editing #menu { display: block; margin-top: 24px }
 .feast { position: relative; margin: 34px 0 10px; padding: 92px 2% 92px; --pf: var(--paper) }
-.feast .top { position: absolute; inset: 60px 0; background: repeating-linear-gradient(90deg, transparent 0 46px, color-mix(in srgb, var(--ink) 18%, transparent) 46px 47.5px), #ead8c3; border: 3px solid var(--ink); border-radius: 40px; box-shadow: inset 0 0 0 7px #ead8c3, inset 0 0 0 8.5px var(--ink) }
+.feast .top { position: absolute; inset: 60px 0; overflow: visible; width: 100%; height: calc(100% - 120px) }
+.feast .top .wood { fill: #ead8c3; stroke: var(--ink); stroke-width: 3; stroke-linejoin: round }
+.feast .top .line { fill: none; stroke: var(--ink); stroke-width: 1.3; opacity: .45; stroke-linecap: round }
+.feast .top .stain { fill: none; stroke: #b98a6a; stroke-width: 2.4; opacity: .7 }
 .feast .seats { position: relative; display: grid; grid-template-columns: repeat(5, 1fr); gap: 2% }
 .seat { position: relative; display: grid; justify-items: center; animation: winpop .5s calc(.4s + var(--i) * .1s) cubic-bezier(.3,1.6,.5,1) both }
 .seat .who { position: absolute; left: 50%; width: 74%; translate: -50% 0; color: var(--ink); --pf: var(--paper) }
 .seat .who svg { width: 100%; height: auto; overflow: visible; display: block }
 .seat.up .who { top: -96px } .seat.down .who { bottom: -96px } .seat.down .who svg { rotate: 180deg }
-.plate { position: relative; width: 92%; max-width: 200px; aspect-ratio: 1; border-radius: 50%; background: var(--paper); border: 3px solid var(--ink); box-shadow: inset 0 0 0 9px var(--paper), inset 0 0 0 10.5px var(--ink);
+.plate { position: relative; width: 92%; max-width: 200px; aspect-ratio: 1; border-radius: 50%; rotate: var(--rot, 0deg);
   display: grid; place-content: center; text-align: center; padding: 18%; gap: 4px }
+.plate .ring { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; z-index: -1 }
+.plate .ring path { stroke: var(--ink); stroke-linecap: round; fill: none }
+.plate { isolation: isolate }
 .plate b { font: 900 clamp(18px, 2.4vw, 30px)/.9 var(--display); font-stretch: 62%; text-transform: uppercase; color: var(--blue) }
 .plate span { font: 400 clamp(10px, 1vw, 12px)/1.3 var(--mono); color: var(--text) }
 .plate .eve { color: var(--ink) }
@@ -514,7 +522,7 @@ body.athome .backhome { visibility: hidden }
 .feastnote { text-align: center; font: 500 12px var(--mono); text-transform: uppercase; color: var(--ink); margin: 6px 0 0 }
 @media (max-width: 760px) {
   .feast { padding: 20px 64px }
-  .feast .top { inset: 0 50px; border-radius: 30px; background: repeating-linear-gradient(0deg, transparent 0 46px, color-mix(in srgb, var(--ink) 18%, transparent) 46px 47.5px), #ead8c3 }
+  .feast .top { left: 50px; top: 0; width: calc(100% - 100px); height: 100% }
   .feast .seats { grid-template-columns: 1fr; gap: 26px; padding: 18px 0 }
   .plate { max-width: 170px }
   .seat .who { width: 64px; top: 50% !important; bottom: auto !important; translate: 0 -50% }
@@ -523,13 +531,20 @@ body.athome .backhome { visibility: hidden }
   .feast .dish { display: none }
 }
 
+#feast .again * { fill: none !important; stroke-width: 1.4px; opacity: .5 }
 /* every page is a big window in the street */
-main .view:not(#v-home) { position: relative; background: color-mix(in srgb, var(--blue) 10%, var(--paper)); border: 3px solid var(--ink); box-shadow: 0 0 0 12px var(--paper), 0 0 0 15px var(--ink);
-  padding: clamp(16px, 3vw, 36px); margin: 46px 15px 70px; animation: winopen .55s cubic-bezier(.25,1.3,.5,1) both }
-main .view:not(#v-home)::before { content: ""; position: absolute; left: -40px; right: -40px; top: -52px; height: 16px; background: var(--paper); border: 3px solid var(--ink) }   /* lintel */
-main .view:not(#v-home)::after { content: ""; position: absolute; left: -46px; right: -46px; bottom: -40px; height: 14px; background: var(--paper); border: 3px solid var(--ink) }  /* sill */
+main .view:not(#v-home) { position: relative; z-index: 0; padding: clamp(16px, 3vw, 36px); margin: 70px 18px 110px; animation: winopen .55s cubic-bezier(.25,1.3,.5,1) both }
+.wframe { position: absolute; left: 0; top: 0; overflow: visible; z-index: -1; pointer-events: none }
+.wframe .fill { fill: var(--paper) } .wframe .pane { fill: color-mix(in srgb, var(--blue) 12%, var(--paper)) }
+.wframe path { stroke: var(--ink); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; fill: none }
+.wframe .thin { stroke-width: 1.4; opacity: .55 }
+.wframe .curtain { fill: color-mix(in srgb, var(--ink) 14%, var(--paper)); stroke-width: 2 }
+.silldood { position: absolute; z-index: 3; bottom: -36px; color: var(--ink); --pf: var(--paper); pointer-events: none; line-height: 0; transform-origin: 50% 100%; animation: winpop .5s .5s cubic-bezier(.3,1.6,.5,1) both }
+.silldood svg { width: 100%; height: auto; overflow: visible }
+.silldood.main { right: 5%; width: clamp(110px, 17vw, 210px) } .silldood.side { left: 4%; width: clamp(60px, 8vw, 100px) }
+.silldood .again * { fill: none !important; stroke-width: 1.6px; opacity: .55 }
 @keyframes winopen { from { opacity: 0; transform: scale(.35) rotate(-2deg) } }
-@media (max-width: 760px) { main .view:not(#v-home) { margin: 40px 6px 60px; box-shadow: 0 0 0 8px var(--paper), 0 0 0 11px var(--ink) } main .view:not(#v-home)::before { left: -16px; right: -16px; top: -42px } main .view:not(#v-home)::after { left: -18px; right: -18px; bottom: -34px } }
+@media (max-width: 760px) { main .view:not(#v-home) { margin: 56px 10px 90px } .silldood { bottom: -30px } }
 @media (prefers-reduced-motion: reduce) { main .view { animation: none !important } }
 
 /* the street: two reference buildings beside ONDERDAK, on dark bordeaux */
@@ -588,7 +603,7 @@ body.athome .facade { border-color: var(--paper) }
 <div class="halo-glow" aria-hidden="true"></div><div class="halo" aria-hidden="true"></div>
 <header class="top">
   <div class="wrap">
-    <div class="modebar"><a href="#home" class="backhome"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12L12 4l9 8M6 10v10h12V10" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/></svg>Back to Onderdak</a><button type="button" id="lang" class="lang" aria-label="Language / Taal"><b data-l="en">EN</b>/<b data-l="nl">NL</b></button><button type="button" id="mode" class="mode" aria-pressed="false"><span class="sw" aria-hidden="true"></span>Member mode</button></div>
+    <div class="modebar"><a href="#home" class="backhome"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 6L3 12l7 6M3 12h7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/><path d="M12 12l5.5-5 5.5 5M14 11v8h7v-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>Back to Onderdak</a><button type="button" id="lang" class="lang" aria-label="Language / Taal"><b data-l="en">EN</b>/<b data-l="nl">NL</b></button><button type="button" id="mode" class="mode" aria-pressed="false"><span class="sw" aria-hidden="true"></span>Member mode</button></div>
     <nav class="tabs" aria-label="Sections">
       <a href="#home" class="homelink">⌂ Onderdak</a>
       <a href="#manifesto">Manifesto</a>
@@ -1402,7 +1417,7 @@ document.addEventListener("focusout", async e => {
   if (!document.body.classList.contains("editing")) relink(el);
   toast("saving…");
   await sendWiki({ sec: "text:" + el.dataset.key, text: now, name: ls("kotcoop-name") || "" });
-  toast("saved ✓"); if (el.closest("#menu")) renderFeast(); sketchAll();
+  toast("saved ✓"); if (el.closest("#menu")) { renderFeast(); frameViews() } sketchAll();
 });
 document.addEventListener("keydown", e => { if (e.key === "Escape" && e.target.closest?.(".ed")) { e.target.closest(".ed").innerHTML = e.target.closest(".ed")._before; e.target.blur() } });
 function toast(t) {
@@ -1700,7 +1715,7 @@ function drawMaps() {
     if (!running) { running = true; requestAnimationFrame(step) } }, { passive: true });
   document.addEventListener("pointerleave", () => els.forEach(el => el.classList.remove("on")));
 })();
-const redraw = () => { fitWins(); fitHome(); sketchAll(); drawThread(); measureThread(); measureWords(); inkWords() };
+const redraw = () => { fitWins(); fitHome(); sketchAll(); frameViews(); drawThread(); measureThread(); measureWords(); inkWords() };
 addEventListener("resize", redraw);
 addEventListener("hashchange", redraw);
 document.fonts && document.fonts.ready.then(redraw);
@@ -1784,19 +1799,84 @@ function renderFeast() {
   const glass = `<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="15" ${P} stroke-width="2.4"/><circle cx="20" cy="20" r="9" ${S} stroke-width="1.4" opacity=".6"/></svg>`;
   const rows = [...document.querySelectorAll("#menu > .row")];
   const day = r => r.querySelector(".k").textContent.trim(), meals = r => [...r.querySelectorAll("div > p")].map(p => p.innerHTML.trim()).filter(Boolean);
-  f.innerHTML = `<div class="top"></div>
+  f.innerHTML = `<svg class="top" aria-hidden="true"></svg>
     <svg class="dish" viewBox="0 0 120 80" style="left:25%;top:28px;width:11%"><ellipse cx="60" cy="44" rx="44" ry="30" ${P}/><ellipse cx="60" cy="40" rx="32" ry="20" ${S} stroke-width="2"/><path d="M20 30L6 18M100 30l14-12" ${S}/><path d="M46 30q-6-10 0-18M60 28q-6-10 0-18M74 30q-6-10 0-18" ${S} stroke-width="2"/></svg>
     <svg class="dish" viewBox="0 0 100 50" style="left:66%;top:38px;width:9%"><path d="M8 25c0-14 84-14 84 0s-84 14-84 0z" ${P}/><path d="M26 18l4 14M44 15l4 18M62 15l4 18M78 18l3 12" ${S} stroke-width="2"/></svg>
     <svg class="dish" viewBox="0 0 60 60" style="left:47%;bottom:36px;width:6%"><circle cx="30" cy="30" r="24" ${P}/><path d="M18 30h24M30 18v24" ${S} stroke-width="2"/></svg>
-    <div class="seats">${rows.map((r, i) => `<div class="seat ${i % 2 ? "down" : "up"}" style="--i:${i}">
+    <div class="seats">${rows.map((r, i) => `<div class="seat ${i % 2 ? "down" : "up"}" style="--i:${i};--rot:${[-4, 3, -2, 5, -3][i % 5]}deg">
       <i class="who" aria-hidden="true">${people[i % people.length]}</i>
       <i class="fork" aria-hidden="true">${fork}</i><i class="knife" aria-hidden="true">${knife}</i><i class="glass" aria-hidden="true">${glass}</i>
-      <div class="plate"><b>${day(r)}</b>${meals(r).map((m, j) => `<span class="${j ? "eve" : ""}">${m}</span>`).join("")}</div></div>`).join("")}</div>`;
+      <div class="plate"><svg class="ring" viewBox="0 0 100 100" aria-hidden="true"></svg><b>${day(r)}</b>${meals(r).map((m, j) => `<span class="${j ? "eve" : ""}">${m}</span>`).join("")}</div></div>`).join("")}</div>`;
+}
+
+// ---- Hand-drawn page windows, table and plates (redrawn when sizes change) ----
+const SILL_EXTRA = `<svg viewBox="0 0 60 70"><path d="M14 70l-4-26h40l-4 26z" fill="var(--pf)" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><path d="M8 44h44" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M30 44C28 30 20 22 10 18c8 10 12 14 20 26zM30 44c2-16 10-26 22-30-6 12-12 18-22 30zM30 44V10c-6 4-6 12 0 20" fill="var(--pf)" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/></svg>`;
+function doubleLine(svg) {
+  if (svg.classList.contains("twice")) return; svg.classList.add("twice");
+  const g = document.createElementNS("http://www.w3.org/2000/svg", "g"); g.setAttribute("class", "again"); g.setAttribute("transform", "translate(1.4 1) rotate(.7)");
+  g.innerHTML = svg.innerHTML; svg.prepend(g);
+}
+function frameViews() {
+  document.querySelectorAll("main .view:not(#v-home)").forEach((v, n) => {
+    if (v.hidden) return;
+    const W = v.offsetWidth, H = v.offsetHeight, key = W + "x" + H; if (v._fk === key) return; v._fk = key;
+    let svg = v.querySelector(":scope > .wframe");
+    if (!svg) { svg = document.createElementNS("http://www.w3.org/2000/svg", "svg"); svg.setAttribute("class", "wframe"); svg.setAttribute("aria-hidden", "true"); v.prepend(svg) }
+    const r = rng(n * 53 + 11), m = innerWidth < 760 ? 8 : 14;
+    svg.setAttribute("width", W); svg.setAttribute("height", H); svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    const box = (x, y, w, h, amp, cj, cls) => `<path class="${cls || ""}" transform="translate(${x} ${y})" d="${wobblyRect(w, h, r, amp, cj)}"/>`;
+    const fillBox = (x, y, w, h, cls) => `<rect class="${cls}" x="${x}" y="${y}" width="${w}" height="${h}" style="stroke:none"/>`;
+    const lw = innerWidth < 760 ? 18 : 44;
+    svg.innerHTML =
+      fillBox(-m, -m, W + 2 * m, H + 2 * m, "fill") + fillBox(0, 0, W, H, "pane") +
+      box(-m, -m, W + 2 * m, H + 2 * m, 3, 6) + box(-m + 2, -m + 1.5, W + 2 * m - 3, H + 2 * m - 2, 3, 6, "thin") +
+      box(0, 0, W, H, 2.2, 4) +
+      // lintel and sill
+      `<path class="fill" style="stroke:none" d="M${-m - lw} ${-m - 26} H${W + m + lw} V${-m - 8} H${-m - lw}Z"/>` + box(-m - lw, -m - 26, W + 2 * (m + lw), 18, 2.5, 4) +
+      `<path class="fill" style="stroke:none" d="M${-m - lw - 6} ${H + m + 6} H${W + m + lw + 6} V${H + m + 24} H${-m - lw - 6}Z"/>` + box(-m - lw - 6, H + m + 6, W + 2 * (m + lw + 6), 18, 2.5, 5) + box(-m - lw - 3, H + m + 9, W + 2 * (m + lw + 3), 14, 2, 4, "thin");
+    // something on the sill that fits the page
+    if (!v.querySelector(":scope > .silldood")) {
+      const id = v.id.slice(2), src = document.querySelector(`.win[href="#${id}"] .dood svg`);
+      const main = document.createElement("i"); main.className = "silldood main"; main.setAttribute("aria-hidden", "true");
+      main.innerHTML = src ? src.outerHTML.replace(/<g class="again".*?<\/g>/s, "").replace(' class="twice"', "") : SILL_EXTRA;
+      const side = document.createElement("i"); side.className = "silldood side"; side.setAttribute("aria-hidden", "true"); side.innerHTML = SILL_EXTRA;
+      v.append(main, side); [main, side].forEach(i => doubleLine(i.querySelector("svg")));
+    }
+  });
+  // the food table: a wobbly wooden top with grain, coffee rings and crumbs; plates with drawn rims
+  const top = document.querySelector("#feast .top");
+  const tb = top && top.getBoundingClientRect();
+  if (tb && tb.width) {
+    const W = Math.round(tb.width), H = Math.round(tb.height), key = W + "x" + H;
+    if (top._fk !== key) {
+      top._fk = key; top.setAttribute("viewBox", `0 0 ${W} ${H}`); const r = rng(77), R = Math.min(40, W / 6), pts = [];
+      const rr = (x, y) => pts.push([x + r() * 5, y + r() * 5]);
+      for (let x = R; x < W - R; x += 50) rr(x, 2);
+      for (let a = -90; a <= 0; a += 30) rr(W - R + R * Math.cos(a * Math.PI / 180), R + R * Math.sin(a * Math.PI / 180));
+      for (let y = R; y < H - R; y += 50) rr(W - 2, y);
+      for (let a = 0; a <= 90; a += 30) rr(W - R + R * Math.cos(a * Math.PI / 180), H - R + R * Math.sin(a * Math.PI / 180));
+      for (let x = W - R; x > R; x -= 50) rr(x, H - 2);
+      for (let a = 90; a <= 180; a += 30) rr(R + R * Math.cos(a * Math.PI / 180), H - R + R * Math.sin(a * Math.PI / 180));
+      for (let y = H - R; y > R; y -= 50) rr(2, y);
+      for (let a = 180; a <= 270; a += 30) rr(R + R * Math.cos(a * Math.PI / 180), R + R * Math.sin(a * Math.PI / 180));
+      const wide = W > H; let lines = "";
+      for (let k = 1; k < 7; k++) { const q = []; for (let t = 0; t <= 8; t++) q.push(wide ? [R + (W - 2 * R) * t / 8, H * k / 7 + r() * 6] : [W * k / 7 + r() * 6, R + (H - 2 * R) * t / 8]); lines += `<path class="line" d="${smooth(q, false)}"/>` }
+      const ring = (x, y, s) => `<path class="stain" transform="translate(${x} ${y})" d="${wobblyCircle(s, r)}"/>`;
+      top.innerHTML = `<path class="wood" d="${smooth(pts, true)}"/><path class="wood" style="fill:none;stroke-width:1.4;opacity:.6" transform="translate(2 1.5)" d="${smooth(pts, true)}"/>${lines}` +
+        ring(W * .35, H * .2, 26) + ring(W * .62, H * .66, 22) + ring(W * .12, H * .7, 18) +
+        `<path class="line" style="opacity:.8;stroke-width:2.4" d="M${W * .47} ${H * .3}l3 2M${W * .5} ${H * .34}l-2 3M${W * .82} ${H * .28}l2 2M${W * .85} ${H * .31}l-3 1M${W * .2} ${H * .4}l2 3"/>`;
+    }
+    document.querySelectorAll("#feast .plate .ring:not(.drawn)").forEach((g, i) => {
+      g.classList.add("drawn"); const r = rng(i * 19 + 5);
+      g.innerHTML = `<path d="${wobblyCircle(100, r)}" style="fill:var(--paper);stroke-width:3"/><path transform="translate(9 9) scale(.82)" d="${wobblyCircle(100, r)}" style="stroke-width:2"/><path transform="translate(2 1)" d="${wobblyCircle(98, r)}" style="stroke-width:1.2;opacity:.5"/>`;
+    });
+    document.querySelectorAll("#feast .who svg, #feast .dish, #feast .fork svg, #feast .knife svg, #feast .glass svg").forEach(doubleLine);
+  }
 }
 
 if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
 drawMaps(); renderAgenda(); renderWiki(); decorateRows(); route(); redraw();
-renderFeast();
+renderFeast(); frameViews();
 loadWikiNotes().then(n => { applyPages(n); applySchedule(n); applyTexts(n); syncPageTabs(); refreshEditables(); renderFeast(); route(); redraw() });
 
 // ---- 2nd masters: the teams from the team list (Teamverdeling 2027); anyone can add their name, saved as "team:<key>" ----
