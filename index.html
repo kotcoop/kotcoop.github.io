@@ -630,7 +630,7 @@ html, body .paper-grid { background: #4a1220 !important }
 .town path { fill: none; stroke: var(--paper); stroke-width: 1.4; stroke-linejoin: round; stroke-linecap: round; opacity: .13; vector-effect: non-scaling-stroke }
 body::before, header.top { background: #4a1220 }
 .mode, .lang { color: var(--paper) } .mode .sw { border-color: var(--paper) } .mode .sw::after { background: var(--paper) }
-body.athome .hometag { color: var(--paper); background: var(--ink); margin: 0 calc(50% - 50vw); width: 100vw; padding: 12px 16px; border-top: 2.5px solid var(--paper); position: relative; z-index: 1 }
+body.athome .hometag { color: var(--paper); background: #4a1220; margin: 0 calc(50% - 50vw); width: 100vw; padding: 26px 16px 30px; font-size: 14px; border-top: 0; position: relative; z-index: 1 }
 footer .box { background: #4a1220; color: var(--paper) }
 body.athome .earth path { stroke: var(--paper) }
 body.athome .facade { border-color: var(--paper) }
@@ -655,8 +655,8 @@ body.athome .facade { border-color: var(--paper) }
 .street { transform-origin: 50% 0 }
 @media (min-width: 761px) {
   body.athome footer { display: none }
-  body.athome .hometag { position: static; margin: 0 calc(50% - 50vw); font-size: 11px; border-top: 0 }
-  body.athome .swipehint { background: var(--ink); margin: 0 calc(50% - 50vw); padding: 12px 16px 4px; opacity: 1; border-top: 2.5px solid var(--paper) }
+  body.athome .hometag { position: static; margin: 0 calc(50% - 50vw); font-size: 15px; border-top: 0; padding: 30px 16px 34px }
+  body.athome .swipehint { background: #4a1220; margin: 0 calc(50% - 50vw); padding: 28px 16px 8px; opacity: 1; border-top: 2.5px solid var(--paper) }
   body.athome main { padding-bottom: 0 }
 }
 /* phone: swipe left and right along the street; ONDERDAK in the middle, the neighbours peek in at the edges */
@@ -1900,7 +1900,7 @@ function fitHome() {
   st.style.transform = ""; st.style.marginBottom = "";
   if (innerWidth > 760) {
     const top = st.getBoundingClientRect().top + scrollY + 20, h = st.offsetHeight;
-    const k = Math.min(1.25, (innerHeight - top - 50) / h);
+    const k = Math.min(1.25, (innerHeight - top - 84) / h);
     if (k !== 1) { st.style.transform = `scale(${k})`; st.style.marginBottom = `${-(1 - k) * h}px` }
     const ht = document.querySelector(".hometag"); if (ht) { ht.style.marginTop = "0px"; const gap = ht.getBoundingClientRect().top - st.getBoundingClientRect().bottom; ht.style.marginTop = `${-gap}px` }
   } else if (!st._centred) { st._centred = true; const b = st.querySelector(".bldg"); st.scrollLeft = b.offsetLeft - (st.clientWidth - b.offsetWidth) / 2 }
@@ -2068,8 +2068,7 @@ function frameViews() {
       fillBox(-m, -m, W + 2 * m, H + 2 * m, "fill") + fillBox(0, 0, W, H, "pane") +
       box(-m, -m, W + 2 * m, H + 2 * m, 3, 6) + box(-m + 2, -m + 1.5, W + 2 * m - 3, H + 2 * m - 2, 3, 6, "thin") +
       box(0, 0, W, H, 2.2, 4) +
-      // lintel and sill
-      `<path class="fill" style="stroke:none" d="M${-m - lw} ${-m - 26} H${W + m + lw} V${-m - 8} H${-m - lw}Z"/>` + box(-m - lw, -m - 26, W + 2 * (m + lw), 18, 2.5, 4) +
+      // sill (lintel strip removed)
       `<path class="fill" style="stroke:none" d="M${-m - lw - 6} ${H + m + 6} H${W + m + lw + 6} V${H + m + 24} H${-m - lw - 6}Z"/>` + box(-m - lw - 6, H + m + 6, W + 2 * (m + lw + 6), 18, 2.5, 5) + box(-m - lw - 3, H + m + 9, W + 2 * (m + lw + 3), 14, 2, 4, "thin");
     // something on the sill that fits the page
     if (!v.querySelector(":scope > .silldood")) {
