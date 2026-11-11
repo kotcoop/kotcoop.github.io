@@ -420,10 +420,11 @@ nav.tabs a, nav.tabs .dd summary { display: flex; align-items: center; justify-c
 .note:active { background: var(--blue) }
 /* ---- Home: the building ONDERDAK ---- */
 body:not(.editing) nav.tabs, body.athome nav.tabs { display: none }
-.backhome { display: inline-flex; align-items: center; gap: 10px; margin-right: auto; font: 900 clamp(18px, 2.2vw, 26px)/1 var(--display); font-stretch: 62%; text-transform: uppercase; letter-spacing: .02em; color: var(--ink); background: var(--paper); padding: 10px 18px 9px 12px; text-decoration: none; border: 3px solid var(--ink); outline: 3px solid var(--paper); box-shadow: 6px 6px 0 var(--blue); rotate: -3deg; transition: background .15s, color .15s, rotate .25s; animation: nudge 2.6s 1.2s ease-in-out infinite }
+.backhome { display: inline-flex; align-items: center; gap: 10px; margin-right: auto; font: 900 clamp(18px, 2.2vw, 26px)/1 var(--display); font-stretch: 62%; text-transform: uppercase; letter-spacing: .02em; color: var(--ink); background: var(--paper); padding: 10px 18px 9px 12px; text-decoration: none; border: 3px solid var(--ink); outline: 3px solid var(--paper); box-shadow: 6px 6px 0 var(--blue); rotate: -3deg; transition: background .15s, color .15s, rotate .25s; animation: nudgeback 2.6s 1.2s ease-in-out infinite }
 .backhome svg { width: 30px; height: 30px }
 .backhome:hover { background: var(--ink); color: #fff; rotate: 0deg; animation: none }
-@keyframes nudge { 0%, 80%, 100% { translate: 0 0 } 86% { translate: -6px 0 } 92% { translate: 0 0 } 96% { translate: -3px 0 } }
+@media (max-width: 760px) { .backhome { font-size: 15px; padding: 8px 12px 7px 8px; box-shadow: 4px 4px 0 var(--blue) } .backhome svg { width: 22px; height: 22px } }
+@keyframes nudgeback { 0%, 80%, 100% { translate: 0 0 } 86% { translate: -6px 0 } 92% { translate: 0 0 } 96% { translate: -3px 0 } }
 @media (prefers-reduced-motion: reduce) { .backhome { animation: none } } .backhome:active { background: var(--blue); color: #fff }
 body.athome .backhome { visibility: hidden }
 .modebar { align-items: center }
