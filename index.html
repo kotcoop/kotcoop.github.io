@@ -513,14 +513,24 @@ body.athome .facade { border-color: var(--paper) }
 .reftag i { font: italic 400 11px/1 var(--mono) }
 .refb:hover .reftag { background: var(--ink); color: #fff } .refb:hover .reftag b { color: #fff }
 .refb:active .reftag { background: var(--blue); color: #fff } .refb:active .reftag b { color: #fff }
-@media (max-width: 760px) {
-  .street { flex-wrap: wrap; row-gap: 40px }
-  .wins { row-gap: 26px }
-  .street .bldg { flex: 0 0 100%; order: -1 }
-  .refb { flex: 1 1 40% }
-  .street .earth { display: none }
-  .street > * { border-bottom: 2.5px solid var(--paper); padding-bottom: 0 }
+.street { transform-origin: 50% 0 }
+@media (min-width: 761px) {
+  body.athome footer { display: none }
+  body.athome .hometag { position: fixed; left: 0; right: 0; bottom: 10px; margin: 0; font-size: 11px; opacity: .8 }
+  body.athome main { padding-bottom: 0 }
 }
+/* phone: swipe left and right along the street; ONDERDAK in the middle, the neighbours peek in at the edges */
+@media (max-width: 760px) {
+  .street { width: 100vw; margin: 0 0 0 calc(50% - 50vw); overflow-x: auto; overflow-y: visible; scroll-snap-type: x mandatory; scrollbar-width: none; gap: 0;
+    padding: 70px 9vw 0; scroll-padding: 0 9vw; overscroll-behavior-x: contain; align-items: flex-end; justify-content: flex-start }
+  .street::-webkit-scrollbar { display: none }
+  .street > .bldg, .street > .refb { flex: 0 0 82vw; max-width: none; scroll-snap-align: center; border-bottom: 2.5px solid var(--paper); margin: 0 }
+  .street > .refb { padding: 0 6vw }
+  .wins { row-gap: 26px }
+  .street .earth { display: none }
+}
+.swipehint { display: none; justify-content: space-between; font: 500 11px/1 var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--paper); opacity: .75; margin: 12px 4px 0 }
+@media (max-width: 760px) { .swipehint { display: flex } }
 </style>
 </head>
 <body>
@@ -582,6 +592,7 @@ body.athome .facade { border-color: var(--paper) }
     <a class="refb cig" href="#wiki" data-wiki="refs" aria-label="References: La Ciguë"><svg viewBox="0 0 200 320" aria-hidden="true"><path d="M2 70h28v248H2z" fill="var(--paper)" stroke="var(--ink)" stroke-width="1.8"/><path d="M9 84v14M19 84v14" stroke="var(--ink)" stroke-linecap="round" stroke-width="3"/><path d="M9 110v14M19 110v14" stroke="var(--ink)" stroke-linecap="round" stroke-width="3"/><path d="M9 136v14M19 136v14" stroke="var(--ink)" stroke-linecap="round" stroke-width="3"/><path d="M9 162v14M19 162v14" stroke="var(--ink)" stroke-linecap="round" stroke-width="3"/><path d="M9 188v14M19 188v14" stroke="var(--ink)" stroke-linecap="round" stroke-width="3"/><path d="M9 214v14M19 214v14" stroke="var(--ink)" stroke-linecap="round" stroke-width="3"/><path d="M9 240v14M19 240v14" stroke="var(--ink)" stroke-linecap="round" stroke-width="3"/><path d="M9 266v14M19 266v14" stroke="var(--ink)" stroke-linecap="round" stroke-width="3"/><path d="M9 292v14M19 292v14" stroke="var(--ink)" stroke-linecap="round" stroke-width="3"/><path d="M30 20C70 18 110 21 152 19L153 318C110 319 70 317 29 318Z" fill="var(--paper)" stroke="var(--ink)" stroke-width="2.5" stroke-linejoin="round"/><rect x="44" y="36" width="12" height="14" fill="none" stroke="var(--ink)" stroke-linecap="round" stroke-width="1.8"/><rect x="57" y="36" width="6" height="14" fill="var(--ink)" opacity=".75"/><rect x="92" y="40" width="12" height="14" fill="none" stroke="var(--ink)" stroke-linecap="round" stroke-width="1.8"/><rect x="105" y="40" width="6" height="14" fill="var(--ink)" opacity=".75"/><rect x="124" y="34" width="12" height="14" fill="none" stroke="var(--ink)" stroke-linecap="round" stroke-width="1.8"/><rect x="137" y="34" width="6" height="14" fill="var(--ink)" opacity=".75"/><rect x="60" y="70" width="12" height="14" fill="none" stroke="var(--ink)" stroke-linecap="round" stroke-width="1.8"/><rect x="73" y="70" width="6" height="14" fill="var(--ink)" opacity=".75"/><rect x="108" y="74" width="12" height="14" fill="none" stroke="var(--ink)" stroke-linecap="round" stroke-width="1.8"/><rect x="121" y="74" width="6" height="14" fill="var(--ink)" opacity=".75"/><rect x="40" y="104" width="12" height="14" fill="none" stroke="var(--ink)" stroke-linecap="round" stroke-width="1.8"/><rect x="53" y="104" width="6" height="14" fill="var(--ink)" opacity=".75"/><rect x="84" y="100" width="12" height="14" fill="none" stroke="var(--ink)" stroke-linecap="round" stroke-width="1.8"/><rect x="97" y="100" width="6" height="14" fill="var(--ink)" opacity=".75"/><rect x="128" y="110" width="12" height="14" fill="none" stroke="var(--ink)" stroke-linecap="round" stroke-width="1.8"/><rect x="141" y="110" width="6" height="14" fill="var(--ink)" opacity=".75"/><rect x="56" y="138" width="12" height="14" fill="none" stroke="var(--ink)" stroke-linecap="round" stroke-width="1.8"/><rect x="69" y="138" width="6" height="14" fill="var(--ink)" opacity=".75"/><rect x="100" y="142" width="12" height="14" fill="none" stroke="var(--ink)" stroke-linecap="round" stroke-width="1.8"/><rect x="113" y="142" width="6" height="14" fill="var(--ink)" opacity=".75"/><rect x="132" y="150" width="12" height="14" fill="none" stroke="var(--ink)" stroke-linecap="round" stroke-width="1.8"/><rect x="145" y="150" width="6" height="14" fill="var(--ink)" opacity=".75"/><rect x="42" y="176" width="12" height="14" fill="none" stroke="var(--ink)" stroke-linecap="round" stroke-width="1.8"/><rect x="55" y="176" width="6" height="14" fill="var(--ink)" opacity=".75"/><rect x="80" y="172" width="12" height="14" fill="none" stroke="var(--ink)" stroke-linecap="round" stroke-width="1.8"/><rect x="93" y="172" width="6" height="14" fill="var(--ink)" opacity=".75"/><rect x="118" y="184" width="12" height="14" fill="none" stroke="var(--ink)" stroke-linecap="round" stroke-width="1.8"/><rect x="131" y="184" width="6" height="14" fill="var(--ink)" opacity=".75"/><rect x="62" y="212" width="12" height="14" fill="none" stroke="var(--ink)" stroke-linecap="round" stroke-width="1.8"/><rect x="75" y="212" width="6" height="14" fill="var(--ink)" opacity=".75"/><rect x="104" y="208" width="12" height="14" fill="none" stroke="var(--ink)" stroke-linecap="round" stroke-width="1.8"/><rect x="117" y="208" width="6" height="14" fill="var(--ink)" opacity=".75"/><rect x="40" y="240" width="12" height="14" fill="none" stroke="var(--ink)" stroke-linecap="round" stroke-width="1.8"/><rect x="53" y="240" width="6" height="14" fill="var(--ink)" opacity=".75"/><rect x="130" y="236" width="12" height="14" fill="none" stroke="var(--ink)" stroke-linecap="round" stroke-width="1.8"/><rect x="143" y="236" width="6" height="14" fill="var(--ink)" opacity=".75"/><rect x="76" y="256" width="12" height="14" fill="none" stroke="var(--ink)" stroke-linecap="round" stroke-width="1.8"/><rect x="89" y="256" width="6" height="14" fill="var(--ink)" opacity=".75"/><rect x="112" y="270" width="12" height="14" fill="none" stroke="var(--ink)" stroke-linecap="round" stroke-width="1.8"/><rect x="125" y="270" width="6" height="14" fill="var(--ink)" opacity=".75"/><rect x="48" y="284" width="12" height="14" fill="none" stroke="var(--ink)" stroke-linecap="round" stroke-width="1.8"/><rect x="61" y="284" width="6" height="14" fill="var(--ink)" opacity=".75"/><path d="M155 118V318" stroke="var(--ink)" stroke-linecap="round" stroke-width="2"/><path d="M163 118V318" stroke="var(--ink)" stroke-linecap="round" stroke-width="2"/><path d="M171 118V318" stroke="var(--ink)" stroke-linecap="round" stroke-width="2"/><path d="M179 118V318" stroke="var(--ink)" stroke-linecap="round" stroke-width="2"/><path d="M187 118V318" stroke="var(--ink)" stroke-linecap="round" stroke-width="2"/><path d="M195 118V318" stroke="var(--ink)" stroke-linecap="round" stroke-width="2"/><path d="M153 118H198" stroke="var(--ink)" stroke-linecap="round" stroke-width="2.4"/><path d="M153 151H198" stroke="var(--ink)" stroke-linecap="round" stroke-width="2.4"/><path d="M153 184H198" stroke="var(--ink)" stroke-linecap="round" stroke-width="2.4"/><path d="M153 217H198" stroke="var(--ink)" stroke-linecap="round" stroke-width="2.4"/><path d="M153 250H198" stroke="var(--ink)" stroke-linecap="round" stroke-width="2.4"/><path d="M153 283H198" stroke="var(--ink)" stroke-linecap="round" stroke-width="2.4"/><path d="M153 316H198" stroke="var(--ink)" stroke-linecap="round" stroke-width="2.4"/><path d="M158 151L192 122" stroke="var(--ink)" stroke-linecap="round" stroke-width="1.4" opacity=".7"/><path d="M158 184L192 155" stroke="var(--ink)" stroke-linecap="round" stroke-width="1.4" opacity=".7"/><path d="M158 217L192 188" stroke="var(--ink)" stroke-linecap="round" stroke-width="1.4" opacity=".7"/><path d="M158 250L192 221" stroke="var(--ink)" stroke-linecap="round" stroke-width="1.4" opacity=".7"/><path d="M158 283L192 254" stroke="var(--ink)" stroke-linecap="round" stroke-width="1.4" opacity=".7"/><path d="M158 316L192 287" stroke="var(--ink)" stroke-linecap="round" stroke-width="1.4" opacity=".7"/><path d="M84 318v-22h18v22" fill="none" stroke="var(--ink)" stroke-linecap="round" stroke-width="2"/></svg><span class="reftag"><small>References</small><b>La Ciguë</b><i>Genève</i></span></a>
       <svg class="earth" viewBox="0 0 800 20" preserveAspectRatio="none" aria-hidden="true"><path d=""/></svg>
     </div>
+    <p class="swipehint" aria-hidden="true"><span>← Collegium Academicum</span><span>La Ciguë →</span></p>
     <p class="hometag">JOKER! · Jokerweek 2027&emsp;22.03 – 26.03&emsp;Engineering Architecture UGent</p>
   </section>
 
@@ -1639,7 +1650,7 @@ function drawMaps() {
     if (!running) { running = true; requestAnimationFrame(step) } }, { passive: true });
   document.addEventListener("pointerleave", () => els.forEach(el => el.classList.remove("on")));
 })();
-const redraw = () => { fitWins(); sketchAll(); drawThread(); measureThread(); measureWords(); inkWords() };
+const redraw = () => { fitWins(); fitHome(); sketchAll(); drawThread(); measureThread(); measureWords(); inkWords() };
 addEventListener("resize", redraw);
 addEventListener("hashchange", redraw);
 document.fonts && document.fonts.ready.then(redraw);
@@ -1696,6 +1707,17 @@ function fitWins() {
 }
 
 document.querySelectorAll(".refb").forEach(a => a.addEventListener("click", () => { currentWiki = a.dataset.wiki; renderWiki() }));
+// ---- Home: on a computer the whole street fits the screen; on a phone it starts on ONDERDAK and swipes sideways ----
+function fitHome() {
+  const st = document.querySelector(".street"); if (!st || !st.offsetParent) return;
+  st.style.transform = ""; st.style.marginBottom = "";
+  if (innerWidth > 760) {
+    const top = st.getBoundingClientRect().top + scrollY + 20, h = st.offsetHeight;
+    const k = Math.min(1, (innerHeight - top - 40) / h);
+    if (k < 1) { st.style.transform = `scale(${k})`; st.style.marginBottom = `${-(1 - k) * h}px` }
+  } else if (!st._centred) { st._centred = true; const b = st.querySelector(".bldg"); st.scrollLeft = b.offsetLeft - (st.clientWidth - b.offsetWidth) / 2 }
+}
+
 if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
 drawMaps(); renderAgenda(); renderWiki(); decorateRows(); route(); redraw();
 loadWikiNotes().then(n => { applyPages(n); applySchedule(n); applyTexts(n); syncPageTabs(); refreshEditables(); route(); redraw() });
