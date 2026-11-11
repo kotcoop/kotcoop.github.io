@@ -1,5 +1,5 @@
 // Keeps the site usable offline: pages come fresh from the network (cache only when offline), other files from cache.
-const CACHE = "jokerweek-v36";
+const CACHE = "jokerweek-v37";
 const FILES = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png"];
 self.addEventListener("install", e => e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES))));
 self.addEventListener("activate", e => e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k))))));
