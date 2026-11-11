@@ -311,6 +311,12 @@ body.editing .manifesto .w { opacity: 1 !important }
 .detail .sched { margin-top: 10px; grid-column: 1 / -1 }
 .wedit select { font: 14px var(--mono); border: 1.5px solid var(--blue); background: var(--paper); color: var(--text); padding: 8px; border-radius: 0 }
 .wedit .row2 label { flex: 1 1 110px }
+/* member mode: add your own pages to the menu */
+nav.tabs .addtab { all: unset; cursor: pointer; font: 500 12px/1 var(--mono); text-transform: uppercase; letter-spacing: .04em; color: var(--blue); padding: 0 12px; display: flex; align-items: center; border-left: 1.5px dashed var(--blue) }
+nav.tabs .addtab:hover { background: var(--blue); color: #fff }
+body:not(.editing) nav.tabs .addtab, body:not(.editing) .delpage { display: none }
+#newpage .wedit { display: grid }
+.delpage { justify-self: start; margin-top: 18px }
 /* entry gate + member list */
 .gate { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px; background: color-mix(in srgb, var(--paper) 92%, transparent) }
 .gate[hidden] { display: none }
@@ -369,7 +375,7 @@ nav.tabs a { font-size: 14px; padding: 14px 8px; letter-spacing: 0 }
 /* header: just the menu, full width, big buttons */
 nav.tabs { margin-left: 0; flex: 1 1 auto; justify-content: space-between }
 nav.tabs a, nav.tabs .dd summary { display: flex; align-items: center; justify-content: center; line-height: 1; font-size: clamp(12px, 1.12vw, 15px); padding: 16px clamp(5px, .6vw, 10px); letter-spacing: .01em; flex: 1 1 auto; text-align: center }
-@media (min-width: 761px) { nav.tabs { flex-wrap: nowrap } }
+@media (min-width: 761px) { nav.tabs { flex-wrap: wrap } }
 @media (max-width: 760px) { nav.tabs { flex-wrap: wrap; overflow: visible } nav.tabs a, nav.tabs .dd summary { font-size: 12.5px; padding: 11px 7px; flex: 1 1 auto } nav.tabs .ddm a { padding: 14px 12px } }
 /* manifesto and the thread of circles side by side, so the buttons are there from the start */
 .mrow { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 36px; align-items: start }
@@ -418,6 +424,7 @@ nav.tabs a, nav.tabs .dd summary { display: flex; align-items: center; justify-c
         <summary>Statutes</summary>
         <div class="ddm"><a href="#coopstatutes">Statutes</a><a href="#statutes">Jokerweek statutes</a></div>
       </details>
+      <button type="button" class="addtab" id="addtab">+ Page</button>
     </nav>
   </div>
 </header>
@@ -621,6 +628,14 @@ nav.tabs a, nav.tabs .dd summary { display: flex; align-items: center; justify-c
 </main>
 
 <button class="btn install" id="install" type="button" hidden>⤓ Install the app</button>
+<div class="gate" id="newpage" hidden>
+  <form class="box ioshelp wedit" id="newpage-form" autocomplete="off">
+    <h3>New page</h3>
+    <label>Title<input class="t" name="t" required maxlength="40" placeholder="e.g. Finances"></label>
+    <label>Intro<input name="i" maxlength="120" placeholder="one line under the title"></label>
+    <div class="row2"><button class="btn" type="submit">Make page</button><button class="btn alt" type="button" id="newpage-cancel">Cancel</button></div>
+  </form>
+</div>
 <div class="gate" id="ios-help" hidden><span class="pointer" id="pointer" aria-hidden="true">↓</span>
   <div class="box ioshelp">
     <h3>Install JOKER!</h3>
@@ -1142,6 +1157,49 @@ function toast(t) {
   el.textContent = t; el.classList.add("on"); clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove("on"), 1800);
 }
 
+// ---- Member mode, part 3: make new pages. Stored as "page:new" (JSON id/title/intro) and "page:del" (id) ----
+const pageTitle = id => document.querySelector(`#v-${id} .titlebox h2`)?.textContent.trim();
+function makePage(id, title, intro) {
+  if (document.getElementById("v-" + id)) return;
+  const sec = document.createElement("section");
+  sec.className = "view"; sec.id = "v-" + id; sec.hidden = true; sec.dataset.custom = "1";
+  sec.innerHTML = `<div class="titlebox"><div class="box"><h2>${esc(title)}</h2><span class="sub">${esc(intro || "")}</span></div><div class="tex stipple" aria-hidden="true"></div></div>
+    <div class="box rows"></div><button class="btn alt delpage" type="button">Remove this page</button>`;
+  document.querySelector("main").append(sec);
+  const box = sec.querySelector(".box.rows");
+  addPartForm(box, "New article", (t, b, n) => newRow(box, id, t, b, n), id);
+  sec.querySelector(".delpage").onclick = async () => {
+    if (!sec.querySelector(".delpage").dataset.sure) { sec.querySelector(".delpage").dataset.sure = 1; sec.querySelector(".delpage").textContent = "Sure? Click again to remove"; return }
+    removePage(id); location.hash = "#manifesto"; await sendWiki({ sec: "page:del", text: id, name: ls("kotcoop-name") || "" }); toast("page removed");
+  };
+  const a = document.createElement("a"); a.href = "#" + id; a.textContent = title; a.dataset.page = id;
+  document.getElementById("addtab").before(a);
+  if (!VIEWS.includes(id)) VIEWS.push(id);
+}
+function removePage(id) { document.getElementById("v-" + id)?.remove(); document.querySelector(`nav.tabs a[data-page="${id}"]`)?.remove(); const i = VIEWS.indexOf(id); if (i > -1) VIEWS.splice(i, 1) }
+function syncPageTabs() { document.querySelectorAll("nav.tabs a[data-page]").forEach(a => { const t = pageTitle(a.dataset.page); if (t) a.textContent = t }) }
+function applyPages(notes) {
+  for (const n of notes) {
+    if (n.sec === "page:new") try { const p = JSON.parse(n.text); if (/^p-[a-z0-9-]+$/.test(p.id)) makePage(p.id, p.title, p.intro) } catch (e) {}
+    if (n.sec === "page:del") removePage(n.text);
+  }
+  document.querySelectorAll("[data-custom] .box.rows").forEach(box => { const id = box.closest(".view").id.slice(2); replay(box, id, notes, (t, b, nm) => newRow(box, id, t, b, nm)) });
+}
+(function () {
+  const dlg = document.getElementById("newpage"), f = document.getElementById("newpage-form");
+  document.getElementById("addtab").onclick = () => { dlg.hidden = false; f.reset(); f.querySelector(".t").focus(); sketchAll() };
+  document.getElementById("newpage-cancel").onclick = () => { dlg.hidden = true };
+  f.onsubmit = async e => {
+    e.preventDefault();
+    const title = f.t.value.trim().replace(/\s+/g, " "), intro = f.i.value.trim(); if (!title) return;
+    let id = "p-" + (slug(title) || "page"); while (document.getElementById("v-" + id)) id += "-2";
+    makePage(id, title, intro); dlg.hidden = true; refreshEditables(); location.hash = "#" + id;
+    await sendWiki({ sec: "page:new", text: JSON.stringify({ id, title, intro }), name: ls("kotcoop-name") || "" }); toast("page made ✓");
+  };
+  // renaming a page's title also renames its tab
+  document.addEventListener("focusout", e => { if (e.target.closest?.("[data-custom] .titlebox h2")) setTimeout(syncPageTabs) });
+})();
+
 // Member mode: the switch top right shows the pencils (log-in links come later)
 (function () {
   const btn = document.getElementById("mode");
@@ -1407,7 +1465,7 @@ document.fonts && document.fonts.ready.then(redraw);
 
 if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
 drawMaps(); renderAgenda(); renderWiki(); decorateRows(); route(); redraw();
-loadWikiNotes().then(n => { applySchedule(n); applyTexts(n); refreshEditables(); redraw() });
+loadWikiNotes().then(n => { applyPages(n); applySchedule(n); applyTexts(n); syncPageTabs(); refreshEditables(); route(); redraw() });
 
 // menu dropdowns: only one open at a time, close when clicking elsewhere
 document.addEventListener("click", e => document.querySelectorAll("nav.tabs .dd[open]").forEach(dd => { if (!dd.contains(e.target)) dd.open = false }));
