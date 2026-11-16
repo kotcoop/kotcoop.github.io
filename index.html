@@ -629,41 +629,57 @@ body.athome header.top { background: transparent; pointer-events: none } body.at
 #feast .again * { fill: none !important; stroke-width: 1.4px; opacity: .5 }
 /* every page is a big window in the street */
 main .view:not(#v-home) { position: relative; z-index: 0; padding: clamp(16px, 3vw, 36px) clamp(16px, 3vw, 36px) clamp(80px, 9vw, 130px); margin: 70px 18px 110px; animation: winopen .55s cubic-bezier(.25,1.3,.5,1) both }
-/* forum: a pin board with post-its */
-.pboard { background: var(--ink); border: 3px solid var(--paper); outline: 2px solid var(--ink); padding: clamp(14px, 3vw, 28px); display: grid; gap: 18px }
+/* forum: a board with fluo post-its you take from the tray */
+.pboard, .pghost { --py: #f4ff3d; --pb: #35d6ff; --pp: #ff2e93 }
+.pboard { background: var(--ink); border: 3px solid var(--paper); outline: 2px solid var(--ink); padding: clamp(12px, 2.4vw, 22px); display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; min-width: 0 }
 .pbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between }
 .pfilter { display: flex; flex-wrap: wrap; gap: 6px }
-.pfilter button { all: unset; cursor: pointer; font: 500 12px/1 var(--mono); text-transform: uppercase; letter-spacing: .04em; padding: 8px 10px; color: var(--paper); border: 1.5px solid var(--paper) }
+.pfilter button { all: unset; cursor: pointer; font: 500 12px/1 var(--mono); text-transform: uppercase; letter-spacing: .04em; padding: 8px 10px; color: var(--paper); border: 1.5px solid var(--paper); display: flex; gap: 6px; align-items: center }
+.pfilter button i { width: 10px; height: 10px; display: block }
 .pfilter button:hover, .pfilter button:focus-visible { background: var(--paper); color: var(--ink) }
 .pfilter button.on { background: var(--blue); border-color: var(--blue); color: #fff }
-.padd { background: var(--paper) !important; color: var(--ink) !important }
-.pnotes { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 22px 18px; align-items: start; padding: 6px 2px 10px }
-.pnote { position: relative; background: var(--paper); color: var(--text); padding: 22px 14px 12px; min-height: 150px; display: flex; flex-direction: column; gap: 10px; box-shadow: 3px 5px 0 color-mix(in srgb, #000 28%, transparent); rotate: var(--rot, 0deg); text-align: left; border: 0; font: inherit; width: 100% }
-.pnote::before { content: ""; position: absolute; top: 7px; left: 50%; width: 11px; height: 11px; border-radius: 50%; translate: -50% 0; background: var(--ink); border: 1.5px solid var(--paper); box-shadow: 1px 2px 0 color-mix(in srgb, #000 30%, transparent) }
-.pnote.k-s { background: color-mix(in srgb, var(--blue) 30%, var(--paper)) }
-.pnote.k-t { background: color-mix(in srgb, var(--ink) 16%, var(--paper)) }
-.pnote.k-s::before, .pnote.k-t::before { background: var(--blue) }
+.k-s { --pc: var(--py) } .k-i { --pc: var(--pb) } .k-t { --pc: var(--pp) }
+.pfilter i, .pstack i { background: var(--pc) }
+.pnotes { position: relative; height: var(--bh, 560px); touch-action: pan-y }
+.pnote { position: absolute; left: calc((100% - 172px) * var(--x, .5)); top: calc((100% - 176px) * var(--y, .5)); width: 172px; min-height: 150px; background: linear-gradient(color-mix(in srgb, #000 9%, var(--pc, var(--paper))) 0 16px, var(--pc, var(--paper)) 16px); color: #2a0a12; padding: 24px 12px 10px; display: flex; flex-direction: column; gap: 8px; box-shadow: 3px 6px 0 color-mix(in srgb, #000 30%, transparent); rotate: var(--rot, 0deg); text-align: left; border: 0; font: inherit; z-index: var(--z, 1) }
 button.pnote { cursor: pointer; transition: rotate .2s, translate .2s }
-button.pnote:hover, button.pnote:focus-visible { rotate: 0deg; translate: 0 -3px; outline: 2px solid var(--blue); outline-offset: 2px }
-.pnote .pk { font: 600 10px/1 var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--ink) }
-.pnote .pt { font: 400 14px/1.4 var(--mono); overflow-wrap: break-word; hyphens: auto; display: -webkit-box; -webkit-line-clamp: 7; -webkit-box-orient: vertical; overflow: hidden; white-space: pre-line }
-.pnote .pby { margin-top: auto; font: 600 12px/1.2 var(--mono); color: var(--ink); border-top: 1px solid currentColor; padding-top: 6px }
-.pnote.wa { background: var(--paper); justify-content: center; text-decoration: none }
+button.pnote:hover, button.pnote:focus-visible { rotate: 0deg; translate: 0 -3px; outline: 2px solid var(--paper); outline-offset: 2px; z-index: 900 }
+.pnote .pk { font: 600 10px/1 var(--mono); text-transform: uppercase; letter-spacing: .06em }
+.pnote .pt { font: 500 14px/1.35 var(--mono); overflow-wrap: break-word; hyphens: auto; display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden; white-space: pre-line }
+.pnote .pby { margin-top: auto; font: 700 12px/1.2 var(--mono); border-top: 1.5px solid currentColor; padding-top: 6px }
+.pnote.wa { background: var(--paper); color: var(--ink); justify-content: center; text-decoration: none; padding-top: 26px }
+.pnote.wa::before { content: ""; position: absolute; top: 7px; left: 50%; width: 11px; height: 11px; border-radius: 50%; translate: -50% 0; background: var(--blue); border: 1.5px solid var(--paper); box-shadow: 1px 2px 0 color-mix(in srgb, #000 30%, transparent) }
 .pnote.wa b { font: 900 20px/1 var(--display); font-stretch: 62%; text-transform: uppercase; color: var(--blue) }
-.pnote.mine { outline: 2px dashed var(--blue); outline-offset: 3px }
-.pnew[hidden] { display: none }
-.pnew { rotate: -1deg; max-width: 420px; justify-self: center; min-height: 0 }
-.pnew textarea, .pnew .pname { font: 400 14px/1.4 var(--mono); padding: 8px; border: 1.5px solid var(--ink); background: #fff; color: var(--text); width: 100%; resize: vertical }
-.pkinds { display: flex; flex-wrap: wrap; gap: 6px } .pkinds input { position: absolute; opacity: 0 }
-.pkinds span { display: block; cursor: pointer; font: 500 11px/1 var(--mono); text-transform: uppercase; padding: 7px 8px; border: 1.5px solid var(--ink); color: var(--ink) }
-.pkinds input:checked + span { background: var(--ink); color: var(--paper) } .pkinds input:focus-visible + span { outline: 2px solid var(--blue); outline-offset: 2px }
-.prow { display: flex; gap: 8px; align-items: center; flex-wrap: wrap } .pcount { margin-right: auto; font: 400 11px var(--mono) }
+.pnote.mine { outline: 2px dashed var(--paper); outline-offset: 3px }
+.pnew { z-index: 950; rotate: 0deg; width: 210px; left: calc((100% - 210px) * var(--x, .5)); top: calc((100% - 250px) * var(--y, .5)); box-shadow: 5px 9px 0 color-mix(in srgb, #000 36%, transparent) }
+.pnew textarea, .pnew .pname { font: 500 14px/1.35 var(--mono); padding: 4px 2px; border: 0; border-bottom: 1.5px dashed #2a0a12; background: transparent; color: #2a0a12; width: 100%; resize: none; outline-offset: 2px }
+.pnew textarea::placeholder, .pnew .pname::placeholder { color: color-mix(in srgb, #2a0a12 60%, transparent) }
+.pnew .pname { font-weight: 700; font-size: 12px }
+.prow { display: flex; gap: 6px; align-items: center; flex-wrap: wrap } .pcount { margin-right: auto; font: 500 10px var(--mono) }
+.pnew .btn { padding: 7px 9px; font-size: 11px; background: #2a0a12; color: #fff; border-color: #2a0a12 } .pnew .btn.alt { background: transparent; color: #2a0a12 }
+.pghost { position: fixed; z-index: 2000; pointer-events: none; width: 150px; height: 150px; left: 0; top: 0; background: var(--pc); box-shadow: 6px 12px 0 color-mix(in srgb, #000 35%, transparent); rotate: -4deg }
+.pnotes.drop { outline: 2px dashed var(--paper); outline-offset: 4px }
+/* the tray under the board: stacks of post-its, chalk and a sponge */
+.ptray { position: relative; display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px 26px; padding: 22px 18px 12px; background: color-mix(in srgb, #000 30%, var(--ink)); border: 3px solid var(--paper); border-top-width: 7px; box-shadow: 0 8px 0 color-mix(in srgb, #000 30%, transparent) }
+.pstacks { display: flex; gap: 22px }
+.pstack { all: unset; cursor: grab; display: grid; gap: 10px; justify-items: center; touch-action: none; user-select: none; -webkit-user-select: none }
+.pstack i { display: block; width: 66px; height: 62px; rotate: -3deg; box-shadow: 3px 3px 0 color-mix(in srgb, #000 22%, var(--pc)), 6px 6px 0 color-mix(in srgb, #000 12%, var(--pc)), 9px 9px 0 color-mix(in srgb, #000 26%, var(--pc)), 12px 13px 0 color-mix(in srgb, #000 40%, transparent); transition: translate .15s, rotate .15s }
+.pstack:nth-child(2) i { rotate: 2deg } .pstack:nth-child(3) i { rotate: -1deg }
+.pstack:hover i, .pstack:focus-visible i { translate: 0 -6px; rotate: 0deg } .pstack:focus-visible { outline: 2px solid var(--paper); outline-offset: 6px } .pstack:active { cursor: grabbing }
+.pstack span { font: 600 10px/1 var(--mono); text-transform: uppercase; letter-spacing: .05em; color: var(--paper) }
+.phint { margin: 0; flex: 1 1 180px; font: 500 12px/1.4 var(--mono); text-transform: uppercase; letter-spacing: .03em; color: var(--paper) }
+.pchalk { width: min(230px, 46%); height: auto; margin-left: auto; overflow: visible }
 .prule { margin: 0; font: 400 11px/1.4 var(--mono); text-transform: uppercase; letter-spacing: .04em; color: var(--paper); opacity: .8 }
-.pempty { color: var(--paper); font: 400 13px var(--mono); grid-column: 1 / -1 }
+.pempty { position: absolute; left: 50%; top: 50%; translate: -50% -50%; margin: 0; color: var(--paper); font: 400 13px var(--mono); text-align: center; opacity: .8 }
 .pcard .preport { all: unset; cursor: pointer; font: 500 11px/1 var(--mono); text-transform: uppercase; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; margin-top: 6px }
-.pcard .preport:hover { color: var(--blue) } .pcard .ptext { white-space: pre-line; overflow-wrap: anywhere }
-@media (max-width: 520px) { .pnotes { grid-template-columns: repeat(2, 1fr); gap: 18px 12px } .pnote .pt { font-size: 13px } }
-@media (prefers-reduced-motion: reduce) { button.pnote { transition: none } }
+.pcard .preport:hover { color: var(--blue) } .pcard .ptext { white-space: pre-line; overflow-wrap: break-word }
+.pcard.k-s, .pcard.k-i, .pcard.k-t { background: var(--pc); color: #2a0a12; border-color: #2a0a12; --py: #f4ff3d; --pb: #35d6ff; --pp: #ff2e93 } .pcard.k-s .sub, .pcard.k-i .sub, .pcard.k-t .sub, .pcard.k-s .preport, .pcard.k-i .preport, .pcard.k-t .preport, .pcard.k-s .x, .pcard.k-i .x, .pcard.k-t .x { color: #2a0a12 }
+@media (max-width: 640px) {
+  .pnotes { height: auto; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 12px; padding: 4px 2px 8px }
+  .pnote, .pnew { position: relative; left: auto; top: auto; width: 100% } .pnew { grid-column: 1 / -1; order: -1 }
+  .pempty { position: static; translate: none; grid-column: 1 / -1 } .pstacks { gap: 16px } .pstack i { width: 54px; height: 50px } .pchalk { width: 150px }
+}
+@media (prefers-reduced-motion: reduce) { button.pnote, .pstack i { transition: none } }
 .wframe { position: absolute; left: 0; top: 0; overflow: visible; z-index: -1; pointer-events: none }
 .wframe .fill { fill: var(--paper) } .wframe .pane { fill: color-mix(in srgb, var(--blue) 12%, var(--paper)) }
 .wframe path { stroke: var(--ink); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; fill: none }
@@ -1040,16 +1056,18 @@ body.athome .facade { border-color: var(--paper) }
     </div>
     <div class="pboard" id="pboard">
       <div class="pbar">
-        <div class="pfilter" role="group" aria-label="Filter"><button type="button" class="on" data-f="">All</button><button type="button" data-f="s">Suggestions</button><button type="button" data-f="i">Ideas</button><button type="button" data-f="t">Testimonies</button></div>
-        <button type="button" class="btn padd" id="padd">+ Post-it</button>
+        <div class="pfilter" role="group" aria-label="Filter"><button type="button" class="on" data-f="">All</button><button type="button" data-f="s"><i class="k-s"></i>Suggestions</button><button type="button" data-f="i"><i class="k-i"></i>Ideas</button><button type="button" data-f="t"><i class="k-t"></i>Testimonies</button></div>
       </div>
-      <form class="pnote pnew" id="pnew" hidden>
-        <div class="pkinds" role="group" aria-label="Kind"><label><input type="radio" name="pk" value="s" checked><span>Suggestion</span></label><label><input type="radio" name="pk" value="i"><span>Idea</span></label><label><input type="radio" name="pk" value="t"><span>Testimony</span></label></div>
-        <textarea maxlength="280" rows="4" placeholder="Write your post-it" aria-label="Write your post-it" required></textarea>
-        <input class="pname" maxlength="40" placeholder="Your name" aria-label="Your name" required>
-        <div class="prow"><span class="pcount">0 / 280</span><button type="button" class="btn alt" data-cancel>Cancel</button><button type="submit" class="btn">Stick it</button></div>
-      </form>
       <div class="pnotes" id="pnotes"></div>
+      <div class="ptray" id="ptray">
+        <div class="pstacks">
+          <button type="button" class="pstack k-s" data-k="s"><i></i><span>Suggestion</span></button>
+          <button type="button" class="pstack k-i" data-k="i"><i></i><span>Idea</span></button>
+          <button type="button" class="pstack k-t" data-k="t"><i></i><span>Testimony</span></button>
+        </div>
+        <p class="phint">Take a post-it from the tray, stick it on the board and write in it.</p>
+        <svg class="pchalk" viewBox="0 0 230 70" aria-hidden="true"><g transform="translate(6 44) rotate(-4)"><path d="M0 0h62q3 5 0 11h-62q-3-6 0-11z" fill="#f6f2ec" stroke="var(--paper)" stroke-width="1.6" stroke-linejoin="round"/><path d="M6 3h48" fill="none" stroke="#fff" stroke-width="1.2" opacity=".55" stroke-linecap="round"/></g><g transform="translate(40 26) rotate(7)"><path d="M0 0h46q3 5 0 11h-46q-3-6 0-11z" fill="#35d6ff" stroke="var(--paper)" stroke-width="1.6" stroke-linejoin="round"/><path d="M6 3h32" fill="none" stroke="#fff" stroke-width="1.2" opacity=".55" stroke-linecap="round"/></g><g transform="translate(96 46) rotate(-9)"><path d="M0 0h50q3 5 0 11h-50q-3-6 0-11z" fill="#ff2e93" stroke="var(--paper)" stroke-width="1.6" stroke-linejoin="round"/><path d="M6 3h36" fill="none" stroke="#fff" stroke-width="1.2" opacity=".55" stroke-linecap="round"/></g><g transform="translate(84 20) rotate(3)"><path d="M0 0h34q3 5 0 11h-34q-3-6 0-11z" fill="#f4ff3d" stroke="var(--paper)" stroke-width="1.6" stroke-linejoin="round"/><path d="M6 3h20" fill="none" stroke="#fff" stroke-width="1.2" opacity=".55" stroke-linecap="round"/></g><g transform="translate(158 22) rotate(-5)"><path d="M0 8h62v28h-62z" fill="#7b1e2e" stroke="var(--paper)" stroke-width="1.8" stroke-linejoin="round"/><path d="M0 8h62v9h-62z" fill="#f6f2ec" stroke="var(--paper)" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 26h46M8 31h30" fill="none" stroke="var(--paper)" stroke-width="1.2" opacity=".6" stroke-linecap="round"/></g><path d="M20 64q8-3 16 0M70 66q10-3 18 0M132 65q7-2 14 0" fill="none" stroke="var(--paper)" stroke-width="1.2" opacity=".45" stroke-linecap="round"/></svg>
+      </div>
       <p class="prule">Everything on this board is public. No phone numbers or private details.</p>
     </div>
   </section>
@@ -2197,57 +2215,94 @@ renderTeams([]);
 loadWikiNotes().then(n => renderTeams(n));
 
 
-// ---- Forum: a pin board. A post-it is one row "postit" (JSON kind/text/id); "postit:report" flags one. Remove = delete its Sheet row ----
+// ---- Forum: a board with post-its. One row "postit" = JSON id/kind/text/x/y; "postit:report" flags one. Remove = delete its Sheet row ----
 const PKIND = { s: "Suggestion", i: "Idea", t: "Testimony" };
-let PFILTER = "";
+let PFILTER = "", PDRAFT = null;
+const phash = id => { let h = 0; for (const c of String(id)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h };
 function boardNotes(notes) {
   const seen = new Set(), out = [];
   for (const n of notes || []) if (n.sec === "postit") try {
     const d = JSON.parse(n.text); if (!d || !d.t || seen.has(d.id)) continue; seen.add(d.id);
-    out.push({ id: String(d.id || ""), k: PKIND[d.k] ? d.k : "i", t: String(d.t).slice(0, 280), name: (n.name || "").slice(0, 40) });
+    const h = phash(d.id), f = (v, alt) => Number.isFinite(+v) && v !== null && v !== "" ? Math.min(1, Math.max(0, +v)) : alt;
+    out.push({ id: String(d.id || ""), k: PKIND[d.k] ? d.k : "i", t: String(d.t).slice(0, 280), name: (n.name || "").slice(0, 40), x: f(d.x, (h % 97) / 96), y: f(d.y, ((h >> 7) % 89) / 88) });
   } catch (e) {}
-  return out.reverse();
+  return out;
 }
 function renderBoard(notes) {
   const el = document.getElementById("pnotes"); if (!el) return;
   const all = boardNotes(notes), mine = JSON.parse(ls("kotcoop-postits") || "[]");
   const list = all.filter(p => !PFILTER || p.k === PFILTER);
-  const rot = id => { let h = 0; for (const c of id) h = (h * 31 + c.charCodeAt(0)) >>> 0; return ((h % 9) - 4) * .7 };
-  el.innerHTML = `<a class="pnote wa" style="--rot:1.5deg" href="https://chat.whatsapp.com/DfnlvwhWPfgKdy7ex9Crtb" target="_blank" rel="noopener" id="wa-link"><span class="pk">Day-to-day talk</span><b>WhatsApp community ↗</b><span class="pby">Announcements come there first</span></a>` +
-    (list.length ? list.map(p => `<button type="button" class="pnote k-${p.k}${mine.includes(p.id) ? " mine" : ""}" style="--rot:${rot(p.id)}deg" data-id="${esc(p.id)}"><span class="pk">${PKIND[p.k]}</span><span class="pt">${esc(p.t)}</span><span class="pby">${esc(p.name || "Anonymous")}</span></button>`).join("")
-      : `<p class="pempty">Nothing here yet. Stick the first post-it.</p>`);
+  el.style.setProperty("--bh", 560 + 180 * Math.floor(all.length / 18) + "px");
+  const keep = el.querySelector(".pnew");
+  el.innerHTML = `<a class="pnote wa" style="--x:.01;--y:.02;--rot:-2deg" href="https://chat.whatsapp.com/DfnlvwhWPfgKdy7ex9Crtb" target="_blank" rel="noopener" id="wa-link"><span class="pk">Day-to-day talk</span><b>WhatsApp community ↗</b><span class="pby">Announcements come there first</span></a>` +
+    list.map((p, i) => `<button type="button" class="pnote k-${p.k}${mine.includes(p.id) ? " mine" : ""}" style="--x:${p.x.toFixed(3)};--y:${p.y.toFixed(3)};--z:${i + 2};--rot:${((phash(p.id) % 9) - 4) * .8}deg" data-id="${esc(p.id)}"><span class="pk">${PKIND[p.k]}</span><span class="pt">${esc(p.t)}</span><span class="pby">${esc(p.name || "Anonymous")}</span></button>`).join("") +
+    (list.length || keep ? "" : `<p class="pempty">Nothing here yet. Take a post-it from the tray below.</p>`);
+  if (keep) el.append(keep);
   el._all = all; try { trNode(el) } catch (e) {}
 }
 (function () {
   const board = document.getElementById("pboard"); if (!board) return;
-  const form = document.getElementById("pnew"), ta = form.querySelector("textarea"), nm = form.querySelector(".pname"), cnt = form.querySelector(".pcount");
-  const card = document.getElementById("pcard"), back = document.querySelector(".pback");
+  const notes = document.getElementById("pnotes"), card = document.getElementById("pcard"), back = document.querySelector(".pback");
+  const free = () => matchMedia("(min-width: 641px)").matches;
   board.querySelector(".pfilter").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; PFILTER = b.dataset.f; board.querySelectorAll(".pfilter button").forEach(x => x.classList.toggle("on", x === b)); renderBoard(LASTNOTES) });
-  document.getElementById("padd").onclick = () => { form.hidden = !form.hidden; if (!form.hidden) { nm.value = ls("kotcoop-name") || ""; ta.focus() } };
-  form.querySelector("[data-cancel]").onclick = () => { form.hidden = true };
-  ta.addEventListener("input", () => { cnt.textContent = ta.value.length + " / 280" });
-  form.addEventListener("submit", async e => {
-    e.preventDefault();
-    const t = ta.value.trim(), name = nm.value.trim(); if (!t || !name) return;
-    const now = Date.now(), recent = JSON.parse(ls("kotcoop-postit-times") || "[]").filter(x => now - x < 6e5);
-    if (recent.length >= 3) return toast("Wait a few minutes before the next post-it");
-    const id = now.toString(36) + Math.random().toString(36).slice(2, 6), k = form.querySelector("input[name=pk]:checked").value;
-    ls("kotcoop-name", name); ls("kotcoop-postit-times", JSON.stringify([...recent, now]));
-    ls("kotcoop-postits", JSON.stringify([...JSON.parse(ls("kotcoop-postits") || "[]"), id]));
-    const row = { sec: "postit", text: JSON.stringify({ id, k, t }), name };
-    (LASTNOTES ||= []).push(row); renderBoard(LASTNOTES);
-    ta.value = ""; cnt.textContent = "0 / 280"; form.hidden = true; toast("saving…");
-    await sendWiki(row); toast("stuck ✓");
+  // write in the post-it you just stuck
+  function compose(k, x, y) {
+    notes.querySelector(".pnew")?.remove(); notes.querySelector(".pempty")?.remove();
+    const f = document.createElement("form"); f.className = "pnote pnew k-" + k; f.style.cssText = `--x:${x.toFixed(3)};--y:${y.toFixed(3)}`;
+    f.innerHTML = `<span class="pk">${PKIND[k]}</span><textarea maxlength="280" rows="5" placeholder="Write here" aria-label="Write here" required></textarea><input class="pname" maxlength="40" placeholder="Your name" aria-label="Your name" required><div class="prow"><span class="pcount">0 / 280</span><button type="button" class="btn alt" data-cancel>Cancel</button><button type="submit" class="btn">Stick it</button></div>`;
+    notes.append(f); try { trNode(f) } catch (e) {}
+    const ta = f.querySelector("textarea"), nm = f.querySelector(".pname"); nm.value = ls("kotcoop-name") || "";
+    ta.addEventListener("input", () => { f.querySelector(".pcount").textContent = ta.value.length + " / 280" });
+    f.querySelector("[data-cancel]").onclick = () => { f.remove(); renderBoard(LASTNOTES) };
+    f.addEventListener("keydown", e => { if (e.key === "Escape") { f.remove(); renderBoard(LASTNOTES) } });
+    f.addEventListener("submit", async e => {
+      e.preventDefault();
+      const t = ta.value.trim(), name = nm.value.trim(); if (!t || !name) return;
+      const now = Date.now(), recent = JSON.parse(ls("kotcoop-postit-times") || "[]").filter(v => now - v < 6e5);
+      if (recent.length >= 3) return toast("Wait a few minutes before the next post-it");
+      const id = now.toString(36) + Math.random().toString(36).slice(2, 6);
+      ls("kotcoop-name", name); ls("kotcoop-postit-times", JSON.stringify([...recent, now]));
+      ls("kotcoop-postits", JSON.stringify([...JSON.parse(ls("kotcoop-postits") || "[]"), id]));
+      const row = { sec: "postit", text: JSON.stringify({ id, k, t, x: +x.toFixed(3), y: +y.toFixed(3) }), name };
+      f.remove(); (LASTNOTES ||= []).push(row); renderBoard(LASTNOTES); toast("saving…");
+      await sendWiki(row); toast("stuck ✓");
+    });
+    if (!free()) f.scrollIntoView({ block: "center", behavior: "smooth" });
+    ta.focus({ preventScroll: free() });
+  }
+  // take one from a stack: drag it onto the board, or just click or tap the stack
+  board.querySelectorAll(".pstack").forEach(st => {
+    let ghost = null, sx = 0, sy = 0, moved = false;
+    const place = (cx, cy) => { const r = notes.getBoundingClientRect(); return [Math.min(1, Math.max(0, (cx - 105 - r.left) / Math.max(1, r.width - 210))), Math.min(1, Math.max(0, (cy - 60 - r.top) / Math.max(1, r.height - 250)))] };
+    st.addEventListener("pointerdown", e => { if (e.button) return; sx = e.clientX; sy = e.clientY; moved = false; st.setPointerCapture(e.pointerId) });
+    st.addEventListener("pointermove", e => {
+      if (!st.hasPointerCapture(e.pointerId)) return;
+      if (!moved && Math.hypot(e.clientX - sx, e.clientY - sy) < 8) return;
+      moved = true;
+      if (!ghost) { ghost = document.createElement("div"); ghost.className = "pghost k-" + st.dataset.k; document.body.append(ghost); notes.classList.add("drop") }
+      ghost.style.translate = `${e.clientX - 75}px ${e.clientY - 40}px`;
+    });
+    const end = e => {
+      if (!st.hasPointerCapture(e.pointerId)) return; st.releasePointerCapture(e.pointerId);
+      ghost?.remove(); ghost = null; notes.classList.remove("drop");
+      if (e.type === "pointercancel" || !moved) return;
+      const r = notes.getBoundingClientRect(), inside = e.clientX > r.left - 20 && e.clientX < r.right + 20 && e.clientY > r.top - 20 && e.clientY < r.bottom + 20;
+      st._dragged = true; setTimeout(() => { st._dragged = false }, 0);
+      if (inside || !free()) compose(st.dataset.k, ...(free() ? place(e.clientX, e.clientY) : [.5, .5]));
+    };
+    st.addEventListener("pointerup", end); st.addEventListener("pointercancel", end);
+    st.addEventListener("click", () => { if (st._dragged) return; compose(st.dataset.k, .12 + Math.random() * .76, .1 + Math.random() * .7) });
   });
-  document.getElementById("pnotes").addEventListener("click", e => {
+  notes.addEventListener("click", e => {
     const b = e.target.closest("button.pnote"); if (!b) return;
-    const p = (document.getElementById("pnotes")._all || []).find(x => x.id === b.dataset.id); if (!p) return;
+    const p = (notes._all || []).find(v => v.id === b.dataset.id); if (!p) return;
     [".sub", "h3", ".ptext"].forEach(q => { const el = card.querySelector(q); el.contentEditable = "false"; el.classList.remove("ed"); el.hidden = false });
+    card.classList.remove("k-s", "k-i", "k-t"); card.classList.add("k-" + p.k);
     card.querySelector(".sub").textContent = PKIND[p.k]; card.querySelector("h3").textContent = p.name || "Anonymous"; card.querySelector(".ptext").textContent = p.t;
     card.querySelector(".preport")?.remove();
     const r = document.createElement("button"); r.type = "button"; r.className = "preport"; r.textContent = "⚑ Report this post-it";
     r.onclick = async () => { r.disabled = true; r.textContent = "Reported, thank you"; await sendWiki({ sec: "postit:report", text: p.id + " · " + p.t.slice(0, 80), name: ls("kotcoop-name") || "" }) };
-    card.append(r); card.hidden = back.hidden = false; trNode?.(card);
+    card.append(r); card.hidden = back.hidden = false; try { trNode(card) } catch (e) {}
   });
   renderBoard([]);
 })();
@@ -2260,7 +2315,7 @@ const FOLK = [
   const card = document.getElementById("pcard"), back = document.querySelector(".pback"); if (!card) return;
   const close = () => { card.hidden = back.hidden = true };
   const open = i => {
-    card.querySelector(".preport")?.remove();
+    card.querySelector(".preport")?.remove(); card.classList.remove("k-s", "k-i", "k-t");
     const p = FOLK[i], on = document.body.classList.contains("editing"), last = {};
     for (const n of LASTNOTES || []) if (n.sec.startsWith("text:folk#" + i + ".")) last[n.sec.split(".").pop()] = n.text;
     [[".sub", "sub"], ["h3", "title"], [".ptext", "text"]].forEach(([q, f]) => {
@@ -2337,7 +2392,7 @@ function setLang(l) {
   requestAnimationFrame(() => { fitWins(); sketchAll() });
 }
 document.getElementById("lang").addEventListener("click", e => { const b = e.target.closest("b"); setLang(b ? b.dataset.l : LANG === "nl" ? "en" : "nl") });
-Object.assign(I18N.t, {"2nd masters": "2de masters", "Who does what · add your name in the Excel": "Wie doet wat · zet je naam in de Excel", "Your name → in the Excel ↗": "Je naam → in de Excel ↗", "Nobody yet": "Nog niemand", "+ Name": "+ Naam", "Your name": "Je naam", "= urban planning (stadsplanning)": "= stadsplanning", "Architecture": "Architectuur", "All": "Alles", "Suggestions": "Suggesties", "Ideas": "Ideeën", "Testimonies": "Getuigenissen", "Suggestion": "Suggestie", "Idea": "Idee", "Testimony": "Getuigenis", "Write your post-it": "Schrijf je post-it", "Cancel": "Annuleer", "Stick it": "Plak", "Everything on this board is public. No phone numbers or private details.": "Alles op dit bord is openbaar. Geen telefoonnummers of privégegevens.", "Nothing here yet. Stick the first post-it.": "Nog niets. Plak de eerste post-it.", "Day-to-day talk": "Dagelijks contact", "WhatsApp community ↗": "WhatsApp-community ↗", "Announcements come there first": "Aankondigingen komen daar eerst", "Anonymous": "Anoniem", "⚑ Report this post-it": "⚑ Meld deze post-it", "Reported, thank you": "Gemeld, dank je", "Questions, suggestions, ideas and testimonies": "Vragen, suggesties, ideeën en getuigenissen", "Urban planning": "Stadsplanning", "blue": "blauw", "= added on the site": "= toegevoegd via de site", "Communication & lead": "Communicatie / leidingnemend", "Sort of chairs: general communication with the people in charge, the teams, the research seminar and the department; keep the overview; prepare the overall planning; deliver minutes; coordinate shift lists.": "Soort voorzitters: algemene communicatie met eindverantwoordelijken, teams, OS en vakgroep; overzicht behouden; algemene planning voorbereiden; verslagen bezorgen; coördinatie shiftenlijsten.", "Assignment": "Opdracht", "This is the team of the research seminar.": "Is team van het Onderzoeksseminarie.", "Meant for the seminar": "Bedoeld voor het seminarie", "Finance: treasury & sponsors": "Financiën: penning & sponsors", "Manage the budget; draw up the estimate; find sponsors (!); keep in touch with sponsors; work closely with DLK and ASAP from the start.": "Budget beheren; begroting opstellen; sponsors zoeken (!); communicatie met sponsors; nauwe samenwerking met DLK en ASAP te beginnen.", "Graphics": "Grafiek", "Poster; logo; posters; 2nd master uniform; meal cards; week planning etc.": "Affiche; logo; posters; uniform 2e MA; eetkaarten; weekplanning enz.", "Promo & social media": "Promo en sociale media", "Set the mood; socials; get people to take part; Ufora page; closely with Graphics & Website.": "Sfeer aanbrengen; socials, mensen engageren om deel te nemen; Uforapagina; in nauwe samenwerking met Grafiek & Website.", "Radio": "Radio", "Draw up the programme; list what is needed; with Light & Sound.": "Programma opstellen; lijst benodigdheden voorzien; ism Licht & Akoestiek.", "Cooking": "Koken", "Make the menu (lunch + dinner); sort out the kitchen; rent or borrow cooking and eating gear; maybe contact food trucks; later: draw up shift lists.": "Menu opstellen (lunch + avond); kook-accommodatie fixen; kook- en eetmateriaal huren/ontlenen; evt. foodtrucks contacteren; latere fase: shiftenlijsten opstellen.", "Side activities": "Randactiviteiten", "Think up (niche) activities that draw people to campus and support the theme (e.g. yoga, morning exercise, battle of the years); quiz.": "(Niche) activiteiten verzinnen die mensen naar de campus lokken en het hoofdthema ondersteunen (bv. yoga, ochtendgymnastiek, jarenstrijd); quiz.", "Location": "Locatie", "Find the location; with the department?; safety, permits & facilities.": "Locatie fixen; ism vakgroep?; veiligheid, vergunningen & accommodatie.", "The seminar?": "Seminarie?", "Decoration": "Inkleding", "Dress up all spaces (workspaces, party room, lecture hall); logistics (tables, chairs…); coordinate and lead the set-up (shifts?).": "Inkleden van alle ruimtes (werkplekken, feestruimte, zaal voor lezingen); logistiek fixen (tafels, stoelen…); opzet coördineren/aansturen (shiften?).", "Bar": "Bar", "Rent and provide bar counters, fridges, drinks, price list; a Jokerweek beer?; later: draw up shifts.": "Toog-elementen huren & voorzien, frigo's, drank, prijslijst fixen; jokerweekbier?; latere fase: shiften opstellen.", "Party": "Feest", "Arrange parties, DJs…; rent installations; closely with Light & Sound, Radio and the bar; closing party.": "Feestjes, DJ's… regelen; installaties huren; in nauwe samenwerking met Licht & Akoestiek, Radio, Barinstallatie; eindfeest.", "Photography": "Fotografie", "Photographers during the Jokerweek; with the digital team.": "Fotografen tijdens JW; ism Digitaal team.", "TV": "TV", "Put together the TV spots; Man Bites Dog meets Archies.": "TV-spotjes ineen steken; Man bijt hond meets Archies.", "Tip: have some ideas before jury week, that is the best moment to interview people!": "Tip: zorg dat je al voor de juryweek wat ideeën hebt, dan kan je best mensen interviewen!", "Light & sound": "Licht & akoestiek", "Light and sound; rent and connect installations; with Party, Radio and the student union for speakers; record the talks?": "Licht- en geluidstechniek; installaties huren & aansluiten; ism Feest, Radio en BV voor sprekers; opnames lezingen?", "Website": "Website", "Build the website, with Graphics & Promo.": "Website in elkaar steken, ism Grafiek & Promo."});
+Object.assign(I18N.t, {"2nd masters": "2de masters", "Who does what · add your name in the Excel": "Wie doet wat · zet je naam in de Excel", "Your name → in the Excel ↗": "Je naam → in de Excel ↗", "Nobody yet": "Nog niemand", "+ Name": "+ Naam", "Your name": "Je naam", "= urban planning (stadsplanning)": "= stadsplanning", "Architecture": "Architectuur", "All": "Alles", "Suggestions": "Suggesties", "Ideas": "Ideeën", "Testimonies": "Getuigenissen", "Suggestion": "Suggestie", "Idea": "Idee", "Testimony": "Getuigenis", "Write here": "Schrijf hier", "Take a post-it from the tray, stick it on the board and write in it.": "Neem een post-it uit de bak, plak hem op het bord en schrijf erin.", "Nothing here yet. Take a post-it from the tray below.": "Nog niets. Neem een post-it uit de bak hieronder.", "Cancel": "Annuleer", "Stick it": "Plak", "Everything on this board is public. No phone numbers or private details.": "Alles op dit bord is openbaar. Geen telefoonnummers of privégegevens.", "Nothing here yet. Stick the first post-it.": "Nog niets. Plak de eerste post-it.", "Day-to-day talk": "Dagelijks contact", "WhatsApp community ↗": "WhatsApp-community ↗", "Announcements come there first": "Aankondigingen komen daar eerst", "Anonymous": "Anoniem", "⚑ Report this post-it": "⚑ Meld deze post-it", "Reported, thank you": "Gemeld, dank je", "Questions, suggestions, ideas and testimonies": "Vragen, suggesties, ideeën en getuigenissen", "Urban planning": "Stadsplanning", "blue": "blauw", "= added on the site": "= toegevoegd via de site", "Communication & lead": "Communicatie / leidingnemend", "Sort of chairs: general communication with the people in charge, the teams, the research seminar and the department; keep the overview; prepare the overall planning; deliver minutes; coordinate shift lists.": "Soort voorzitters: algemene communicatie met eindverantwoordelijken, teams, OS en vakgroep; overzicht behouden; algemene planning voorbereiden; verslagen bezorgen; coördinatie shiftenlijsten.", "Assignment": "Opdracht", "This is the team of the research seminar.": "Is team van het Onderzoeksseminarie.", "Meant for the seminar": "Bedoeld voor het seminarie", "Finance: treasury & sponsors": "Financiën: penning & sponsors", "Manage the budget; draw up the estimate; find sponsors (!); keep in touch with sponsors; work closely with DLK and ASAP from the start.": "Budget beheren; begroting opstellen; sponsors zoeken (!); communicatie met sponsors; nauwe samenwerking met DLK en ASAP te beginnen.", "Graphics": "Grafiek", "Poster; logo; posters; 2nd master uniform; meal cards; week planning etc.": "Affiche; logo; posters; uniform 2e MA; eetkaarten; weekplanning enz.", "Promo & social media": "Promo en sociale media", "Set the mood; socials; get people to take part; Ufora page; closely with Graphics & Website.": "Sfeer aanbrengen; socials, mensen engageren om deel te nemen; Uforapagina; in nauwe samenwerking met Grafiek & Website.", "Radio": "Radio", "Draw up the programme; list what is needed; with Light & Sound.": "Programma opstellen; lijst benodigdheden voorzien; ism Licht & Akoestiek.", "Cooking": "Koken", "Make the menu (lunch + dinner); sort out the kitchen; rent or borrow cooking and eating gear; maybe contact food trucks; later: draw up shift lists.": "Menu opstellen (lunch + avond); kook-accommodatie fixen; kook- en eetmateriaal huren/ontlenen; evt. foodtrucks contacteren; latere fase: shiftenlijsten opstellen.", "Side activities": "Randactiviteiten", "Think up (niche) activities that draw people to campus and support the theme (e.g. yoga, morning exercise, battle of the years); quiz.": "(Niche) activiteiten verzinnen die mensen naar de campus lokken en het hoofdthema ondersteunen (bv. yoga, ochtendgymnastiek, jarenstrijd); quiz.", "Location": "Locatie", "Find the location; with the department?; safety, permits & facilities.": "Locatie fixen; ism vakgroep?; veiligheid, vergunningen & accommodatie.", "The seminar?": "Seminarie?", "Decoration": "Inkleding", "Dress up all spaces (workspaces, party room, lecture hall); logistics (tables, chairs…); coordinate and lead the set-up (shifts?).": "Inkleden van alle ruimtes (werkplekken, feestruimte, zaal voor lezingen); logistiek fixen (tafels, stoelen…); opzet coördineren/aansturen (shiften?).", "Bar": "Bar", "Rent and provide bar counters, fridges, drinks, price list; a Jokerweek beer?; later: draw up shifts.": "Toog-elementen huren & voorzien, frigo's, drank, prijslijst fixen; jokerweekbier?; latere fase: shiften opstellen.", "Party": "Feest", "Arrange parties, DJs…; rent installations; closely with Light & Sound, Radio and the bar; closing party.": "Feestjes, DJ's… regelen; installaties huren; in nauwe samenwerking met Licht & Akoestiek, Radio, Barinstallatie; eindfeest.", "Photography": "Fotografie", "Photographers during the Jokerweek; with the digital team.": "Fotografen tijdens JW; ism Digitaal team.", "TV": "TV", "Put together the TV spots; Man Bites Dog meets Archies.": "TV-spotjes ineen steken; Man bijt hond meets Archies.", "Tip: have some ideas before jury week, that is the best moment to interview people!": "Tip: zorg dat je al voor de juryweek wat ideeën hebt, dan kan je best mensen interviewen!", "Light & sound": "Licht & akoestiek", "Light and sound; rent and connect installations; with Party, Radio and the student union for speakers; record the talks?": "Licht- en geluidstechniek; installaties huren & aansluiten; ism Feest, Radio en BV voor sprekers; opnames lezingen?", "Website": "Website", "Build the website, with Graphics & Promo.": "Website in elkaar steken, ism Grafiek & Promo."});
 Object.assign(I18N.t, {"Why we start a student housing cooperative": "Waarom we een studentenwooncoöperatie oprichten", "2nd masters": "2de masters", "Jokerweek statutes": "Jokerweek\u00adstatuten"});
 Object.assign(I18N.t, {"Under construction": "In opbouw", "Who are we?": "Wie zijn wij?", "Curator of the Jokerweek": "Curator van de Jokerweek", "Pink sweater": "Roze trui", "Blue cardigan": "Blauwe cardigan", "Name and introduction follow": "Naam en voorstelling volgen", "One of the people who opens the door of JOKER!. Ask her anything about becoming a member.": "Een van de mensen die de deur van JOKER! openen. Vraag haar alles over lid worden.", "The other host at the door. She welcomes everyone who walks into ONDERDAK.": "De andere gastvrouw aan de deur. Zij verwelkomt iedereen die ONDERDAK binnenstapt."});
 Object.assign(I18N.t, {"This site is still being built. The crane leaves when it is ready.": "Deze site is nog in opbouw. De kraan verdwijnt zodra ze klaar is.", "Enter the site →": "Naar de site →"});
