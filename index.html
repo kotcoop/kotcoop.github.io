@@ -659,6 +659,19 @@ button.pnote:hover, button.pnote:focus-visible { rotate: 0deg; translate: 0 -3px
 .prow { display: flex; gap: 6px; align-items: center; flex-wrap: wrap } .pcount { margin-right: auto; font: 500 10px var(--mono) }
 .pnew .btn { padding: 7px 9px; font-size: 11px; background: #2a0a12; color: #fff; border-color: #2a0a12 } .pnew .btn.alt { background: transparent; color: #2a0a12 }
 .pghost { position: fixed; z-index: 2000; pointer-events: none; width: 150px; height: 150px; left: 0; top: 0; background: var(--pc); box-shadow: 6px 12px 0 color-mix(in srgb, #000 35%, transparent); rotate: -4deg }
+/* forum fills the screen: no window frame; laptop board grows sideways, phone board grows down */
+body.atforum main { padding-block: 0 14px; max-width: none }
+body.atforum footer { display: none }
+main #v-forum.view { margin: 0 !important; padding: 0 !important; animation: none }
+#v-forum .titlebox { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%) }
+#v-forum .pboard { border-width: 2px }
+.pnote .pdate { font: 500 9.5px/1 var(--mono); opacity: .7; letter-spacing: .02em }
+.pcard .pdate { font: 500 11px var(--mono); opacity: .75; margin: -4px 0 8px }
+@media (min-width: 641px) {
+  .pscroll { overflow-x: auto; overflow-y: hidden; margin: 0 calc(-1 * clamp(12px, 2.4vw, 22px)); padding: 0 clamp(12px, 2.4vw, 22px); scrollbar-color: var(--paper) #2c2d31; overscroll-behavior-x: contain }
+  .pnotes { width: var(--bw, 100%); min-width: 100%; height: max(var(--bh, 380px), calc(100svh - 392px), 320px) }
+  .pnote { left: calc(var(--lx, 0) * 1px) } .pnew { left: calc(var(--lx, 0) * 1px) }
+}
 .pnotes.drop { outline: 2px dashed var(--paper); outline-offset: 4px }
 /* the tray under the board: stacks of post-its, chalk and a sponge */
 .ptray { position: relative; display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px 26px; padding: 44px 9% 30px; margin: 0 -6px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpolygon points='5,1 95,1 100,99 0,99' fill='%2355575d' stroke='%23f6f2ec' stroke-width='2' vector-effect='non-scaling-stroke' stroke-linejoin='round'/%3E%3Cpolygon points='7.5,13 92.5,13 96,86 4,86' fill='%2324252a' stroke='%23f6f2ec' stroke-width='1.3' vector-effect='non-scaling-stroke' stroke-linejoin='round'/%3E%3Cpolygon points='7.5,13 92.5,13 93.2,27 6.8,27' fill='%23000' opacity='.35'/%3E%3Cpath d='M5,1 7.5,13M95,1 92.5,13M0,99 4,86M100,99 96,86' fill='none' stroke='%23f6f2ec' stroke-width='1.3' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") center / 100% 100% no-repeat; filter: drop-shadow(0 9px 0 color-mix(in srgb, #000 35%, transparent)) }
@@ -1065,7 +1078,7 @@ body.athome .facade { border-color: var(--paper) }
       <div class="tex hatch" aria-hidden="true"></div>
     </div>
     <div class="pboard" id="pboard">
-      <div class="pnotes" id="pnotes"></div>
+      <div class="pscroll" id="pscroll"><div class="pnotes" id="pnotes"></div></div>
       <div class="ptray" id="ptray">
         <div class="pstacks">
           <button type="button" class="pstack k-s" data-k="s" aria-label="Yellow post-it"><i></i></button>
@@ -1241,7 +1254,7 @@ const WIKI = [
 const VIEWS = ["home","about","radio","speakers","coopstatutes","manifesto","schedule","membership","members","teams","governance","statutes","food","locations","wiki","forum"];
 function route() {
   const v = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : "home";
-  document.body.classList.toggle("athome", v === "home");
+  document.body.classList.toggle("athome", v === "home"); document.body.classList.toggle("atforum", v === "forum");
   VIEWS.forEach(n => document.getElementById("v-" + n).hidden = n !== v);
   document.querySelectorAll("nav.tabs a").forEach(a => {
     if (a.getAttribute("href") === "#" + v) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
@@ -2152,7 +2165,7 @@ function doubleLine(svg) {
   g.innerHTML = svg.innerHTML; svg.prepend(g);
 }
 function frameViews() {
-  document.querySelectorAll("main .view:not(#v-home)").forEach((v, n) => {
+  document.querySelectorAll("main .view:not(#v-home):not(#v-forum)").forEach((v, n) => {
     if (v.hidden) return;
     const W = v.offsetWidth, H = v.offsetHeight, key = W + "x" + H; if (v._fk === key) return; v._fk = key;
     let svg = v.querySelector(":scope > .wframe");
@@ -2231,18 +2244,21 @@ function boardNotes(notes) {
   for (const n of notes || []) if (n.sec === "postit") try {
     const d = JSON.parse(n.text); if (!d || !d.t || seen.has(d.id)) continue; seen.add(d.id);
     const h = phash(d.id), f = (v, alt) => Number.isFinite(+v) && v !== null && v !== "" ? Math.min(1, Math.max(0, +v)) : alt;
-    out.push({ id: String(d.id || ""), k: PKIND[d.k] ? d.k : "i", t: String(d.t).slice(0, 280), name: (n.name || "").slice(0, 40), x: f(d.x, (h % 97) / 96), py: Number.isFinite(+d.py) && d.py !== "" && d.py !== null ? Math.max(0, Math.min(20000, +d.py)) : Math.round(f(d.y, ((h >> 7) % 89) / 88) * 384) });
+    const ts = +d.d || parseInt(String(d.id).slice(0, -4), 36) || 0;
+    out.push({ ts: ts > 1.6e12 && ts < 4e12 ? ts : 0, lx: Number.isFinite(+d.lx) && d.lx !== "" && d.lx !== null ? Math.max(0, Math.min(40000, +d.lx)) : Math.round(f(d.x, (h % 97) / 96) * 928), id: String(d.id || ""), k: PKIND[d.k] ? d.k : "i", t: String(d.t).slice(0, 280), name: (n.name || "").slice(0, 40), x: f(d.x, (h % 97) / 96), py: Number.isFinite(+d.py) && d.py !== "" && d.py !== null ? Math.max(0, Math.min(20000, +d.py)) : Math.round(f(d.y, ((h >> 7) % 89) / 88) * 384) });
   } catch (e) {}
   return out;
 }
+const pdate = ts => { const d = new Date(ts), z = n => String(n).padStart(2, "0"); return `${d.getDate()} ${["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][d.getMonth()]} ${d.getFullYear()} · ${z(d.getHours())}:${z(d.getMinutes())}` };
 function renderBoard(notes) {
   const el = document.getElementById("pnotes"); if (!el) return;
   const all = boardNotes(notes), mine = JSON.parse(ls("kotcoop-postits") || "[]");
   const list = all.filter(p => !PFILTER || p.k === PFILTER);
-  el.style.setProperty("--bh", Math.max(560, ...all.map(p => p.py + 176 + 240)) + "px");
+  el.style.setProperty("--bh", Math.max(420, ...all.map(p => p.py + 200)) + "px");
+  const vw = (el.parentNode.clientWidth || 900) - 20; el.style.setProperty("--bw", Math.max(vw, ...all.map(p => p.lx + 172 + Math.max(320, vw * .45))) + "px");
   const keep = el.querySelector(".pnew");
-  el.innerHTML = `<a class="pnote wa" style="--x:.01;--y:.02;--rot:-2deg" href="https://chat.whatsapp.com/DfnlvwhWPfgKdy7ex9Crtb" target="_blank" rel="noopener" id="wa-link"><span class="pk">Day-to-day talk</span><b>WhatsApp community ↗</b><span class="pby">Announcements come there first</span></a>` +
-    list.map((p, i) => `<button type="button" class="pnote k-${p.k}${mine.includes(p.id) ? " mine" : ""}" style="--x:${p.x.toFixed(3)};--top:${Math.round(p.py)};--z:${i + 2};--rot:${((phash(p.id) % 9) - 4) * .8}deg" data-id="${esc(p.id)}"><span class="pt">${esc(p.t)}</span><span class="pby">${esc(p.name || "Anonymous")}</span></button>`).join("") +
+  el.innerHTML = `<a class="pnote wa" style="--x:.01;--lx:8;--y:.02;--rot:-2deg" href="https://chat.whatsapp.com/DfnlvwhWPfgKdy7ex9Crtb" target="_blank" rel="noopener" id="wa-link"><span class="pk">Day-to-day talk</span><b>WhatsApp community ↗</b><span class="pby">Announcements come there first</span></a>` +
+    list.map((p, i) => `<button type="button" class="pnote k-${p.k}${mine.includes(p.id) ? " mine" : ""}" style="--x:${p.x.toFixed(3)};--lx:${Math.round(p.lx)};--top:${Math.round(p.py)};--z:${i + 2};--rot:${((phash(p.id) % 9) - 4) * .8}deg" data-id="${esc(p.id)}"><span class="pt">${esc(p.t)}</span><span class="pby">${esc(p.name || "Anonymous")}</span>${p.ts ? `<span class="pdate">${pdate(p.ts)}</span>` : ""}</button>`).join("") +
     (list.length || keep ? "" : `<p class="pempty">Nothing here yet. Take a post-it from the tray below.</p>`);
   if (keep) el.append(keep);
   el._all = all; try { trNode(el) } catch (e) {}
@@ -2250,11 +2266,14 @@ function renderBoard(notes) {
 (function () {
   const board = document.getElementById("pboard"); if (!board) return;
   const notes = document.getElementById("pnotes"), card = document.getElementById("pcard"), back = document.querySelector(".pback");
-  const free = () => matchMedia("(min-width: 641px)").matches;
+  const free = () => matchMedia("(min-width: 641px)").matches, scroller = document.getElementById("pscroll");
+  // a mouse wheel scrolls the board sideways on a laptop
+  scroller.addEventListener("wheel", e => { if (!free() || e.ctrlKey || Math.abs(e.deltaX) > Math.abs(e.deltaY) || scroller.scrollWidth <= scroller.clientWidth + 2) return; const max = scroller.scrollWidth - scroller.clientWidth; if ((e.deltaY > 0 && scroller.scrollLeft >= max - 1) || (e.deltaY < 0 && scroller.scrollLeft <= 0)) return; e.preventDefault(); scroller.scrollLeft += e.deltaY }, { passive: false });
     // write in the post-it you just stuck
-  function compose(k, x, y) {
+  function compose(k, x, y, lx) {
     notes.querySelector(".pnew")?.remove(); notes.querySelector(".pempty")?.remove();
-    const f = document.createElement("form"); f.className = "pnote pnew k-" + k; f.style.cssText = `--x:${x.toFixed(3)};--top:${Math.round(y)}`;
+    const f = document.createElement("form"); f.className = "pnote pnew k-" + k; lx = Math.round(lx ?? x * 928); f.style.cssText = `--x:${x.toFixed(3)};--lx:${lx};--top:${Math.round(y)}`;
+    if (free() && lx + 600 > notes.offsetWidth) notes.style.setProperty("--bw", (lx + 600) + "px");
     if (y + 300 > notes.offsetHeight) notes.style.setProperty("--bh", Math.round(y + 320) + "px");
     f.innerHTML = `<textarea maxlength="280" rows="5" placeholder="Write here" aria-label="Write here" required></textarea><input class="pname" maxlength="40" placeholder="Your name" aria-label="Your name" required><div class="prow"><span class="pcount">0 / 280</span><button type="button" class="btn alt" data-cancel>Cancel</button><button type="submit" class="btn">Stick it</button></div>`;
     notes.append(f); try { trNode(f) } catch (e) {}
@@ -2270,7 +2289,7 @@ function renderBoard(notes) {
       const id = now.toString(36) + Math.random().toString(36).slice(2, 6);
       ls("kotcoop-name", name); ls("kotcoop-postit-times", JSON.stringify([...recent, now]));
       ls("kotcoop-postits", JSON.stringify([...JSON.parse(ls("kotcoop-postits") || "[]"), id]));
-      const row = { sec: "postit", text: JSON.stringify({ id, k, t, x: +x.toFixed(3), py: Math.round(y) }), name };
+      const row = { sec: "postit", text: JSON.stringify({ id, k, t, x: +x.toFixed(3), lx, py: Math.round(y), d: now }), name };
       f.remove(); (LASTNOTES ||= []).push(row); renderBoard(LASTNOTES); toast("saving…");
       await sendWiki(row); toast("stuck ✓");
     });
@@ -2280,7 +2299,7 @@ function renderBoard(notes) {
   // take one from a stack: drag it onto the board, or just click or tap the stack
   board.querySelectorAll(".pstack").forEach(st => {
     let ghost = null, sx = 0, sy = 0, moved = false;
-    const place = (cx, cy) => { const r = notes.getBoundingClientRect(); return [Math.min(1, Math.max(0, (cx - 105 - r.left) / Math.max(1, r.width - 210))), Math.max(0, Math.min(r.height - 120, cy - 60 - r.top))] };
+    const place = (cx, cy) => { const r = notes.getBoundingClientRect(), lx = Math.max(0, cx - 105 - r.left); return [Math.min(1, lx / 928), Math.max(0, Math.min(r.height - 300, cy - 60 - r.top)), lx] };
     st.addEventListener("pointerdown", e => { if (e.button) return; sx = e.clientX; sy = e.clientY; moved = false; st.setPointerCapture(e.pointerId) });
     st.addEventListener("pointermove", e => {
       if (!st.hasPointerCapture(e.pointerId)) return;
@@ -2293,12 +2312,14 @@ function renderBoard(notes) {
       if (!st.hasPointerCapture(e.pointerId)) return; st.releasePointerCapture(e.pointerId);
       ghost?.remove(); ghost = null; notes.classList.remove("drop");
       if (e.type === "pointercancel" || !moved) return;
-      const r = notes.getBoundingClientRect(), inside = e.clientX > r.left - 20 && e.clientX < r.right + 20 && e.clientY > r.top - 20 && e.clientY < r.bottom + 20;
+      const r = scroller.getBoundingClientRect(), inside = e.clientX > r.left - 20 && e.clientX < r.right + 20 && e.clientY > r.top - 20 && e.clientY < r.bottom + 20;
       st._dragged = true; setTimeout(() => { st._dragged = false }, 0);
       if (inside || !free()) compose(st.dataset.k, ...(free() ? place(e.clientX, e.clientY) : [.5, 0]));
     };
     st.addEventListener("pointerup", end); st.addEventListener("pointercancel", end);
-    st.addEventListener("click", () => { if (st._dragged) return; compose(st.dataset.k, .12 + Math.random() * .76, Math.max(0, notes.offsetHeight - 470 + Math.random() * 160)) });
+    st.addEventListener("click", () => { if (st._dragged) return; if (!free()) return compose(st.dataset.k, .5, 0);
+      const vis = scroller.clientWidth, lx = scroller.scrollLeft + 40 + Math.random() * Math.max(0, vis - 290);
+      compose(st.dataset.k, Math.min(1, lx / 928), 20 + Math.random() * Math.max(0, notes.offsetHeight - 340), lx) });
   });
   notes.addEventListener("click", e => {
     const b = e.target.closest("button.pnote"); if (!b) return;
@@ -2306,6 +2327,7 @@ function renderBoard(notes) {
     [".sub", "h3", ".ptext"].forEach(q => { const el = card.querySelector(q); el.contentEditable = "false"; el.classList.remove("ed"); el.hidden = false });
     card.classList.remove("k-s", "k-i", "k-t"); card.classList.add("k-" + p.k);
     card.querySelector(".sub").textContent = "Post-it"; card.querySelector("h3").textContent = p.name || "Anonymous"; card.querySelector(".ptext").textContent = p.t;
+    card.querySelector(".pdate")?.remove(); if (p.ts) { const d = document.createElement("p"); d.className = "pdate"; d.textContent = pdate(p.ts); card.querySelector("h3").after(d) }
     card.querySelector(".preport")?.remove();
     const r = document.createElement("button"); r.type = "button"; r.className = "preport"; r.textContent = "⚑ Report this post-it";
     r.onclick = async () => { r.disabled = true; r.textContent = "Reported, thank you"; await sendWiki({ sec: "postit:report", text: p.id + " · " + p.t.slice(0, 80), name: ls("kotcoop-name") || "" }) };
@@ -2322,7 +2344,7 @@ const FOLK = [
   const card = document.getElementById("pcard"), back = document.querySelector(".pback"); if (!card) return;
   const close = () => { card.hidden = back.hidden = true };
   const open = i => {
-    card.querySelector(".preport")?.remove(); card.classList.remove("k-s", "k-i", "k-t");
+    card.querySelector(".preport")?.remove(); card.querySelector(".pdate")?.remove(); card.classList.remove("k-s", "k-i", "k-t");
     const p = FOLK[i], on = document.body.classList.contains("editing"), last = {};
     for (const n of LASTNOTES || []) if (n.sec.startsWith("text:folk#" + i + ".")) last[n.sec.split(".").pop()] = n.text;
     [[".sub", "sub"], ["h3", "title"], [".ptext", "text"]].forEach(([q, f]) => {
